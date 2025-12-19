@@ -788,11 +788,7 @@ export function ProductForm({
         )}
 
         {isVariant && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Product Variants</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          <>
               {variantOptions.map((variant, index) => (
                 <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4">
                   <div className="md:col-span-4">
@@ -886,8 +882,7 @@ export function ProductForm({
                   </Table>
                 </div>
               )}
-            </CardContent>
-          </Card>
+          </>
         )}
 
         {mockWarehouses.length > 0 && (
