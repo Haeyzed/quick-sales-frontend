@@ -345,7 +345,7 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockBrands.map((b) => ({ value: b.id, label: b.title }))}
                     placeholder="Select brand..."
-                    searchable
+                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
@@ -368,7 +368,7 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
                     placeholder="Select category..."
-                    searchable
+                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
@@ -430,7 +430,7 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select unit..."
-                    searchable
+                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -448,7 +448,7 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select sale unit..."
-                    searchable
+                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -466,7 +466,7 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select purchase unit..."
-                    searchable
+                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -630,7 +630,7 @@ export function ProductForm({
                       ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
                     ]}
                     placeholder="Select tax..."
-                    searchable
+                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
