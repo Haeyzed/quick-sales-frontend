@@ -39,17 +39,17 @@ export function TagInput({
   return (
     <div
       className={cn(
-        "flex min-h-10 w-full flex-wrap gap-2 rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-xs ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+        "flex min-h-9 w-full flex-wrap gap-1.5 rounded-lg border border-input bg-card px-2.5 py-1.5 text-sm shadow-xs ring-offset-background focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
         className,
       )}
       onClick={() => inputRef.current?.focus()}
     >
       {value.map((tag) => (
-        <Badge key={tag} variant="secondary" className="gap-1 pr-1">
+        <Badge key={tag} variant="secondary" className="gap-1 h-6 px-2 py-0.5 text-xs">
           <span>{tag}</span>
           <button
             type="button"
-            className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="ml-0.5 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 removeTag(tag)
