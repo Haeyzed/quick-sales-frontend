@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { BarCode01Icon } from "@hugeicons/core-free-icons"
 import { mockProducts } from "@/lib/mock-data/products"
-import type { Product } from "@/lib/types/products"
+import type { Product } from "@/lib/types/product"
 
 interface ComboProductSelectorProps {
   onAddProduct: (product: Product) => void

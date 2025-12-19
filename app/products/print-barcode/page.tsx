@@ -11,7 +11,8 @@ import { HugeiconsIcon } from "@hugeicons/react"
 import { BarCode01Icon, Delete01Icon, PrinterIcon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { mockProducts, mockWarehouses } from "@/lib/mock-data/products"
+import { mockProducts } from "@/lib/mock-data/products"
+import { mockWarehouses } from "@/lib/mock-data/warehouses"
 
 interface BarcodeProduct {
   id: string

@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ProductCombobox } from "@/components/products/product-combobox"
-import { mockProducts, mockWarehouses } from "@/lib/mock-data/products"
+import { mockProducts } from "@/lib/mock-data/products"
+import { mockWarehouses } from "@/lib/mock-data/warehouses"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
@@ -91,7 +92,6 @@ export default function ProductHistoryListPage() {
                   ...mockProducts.map((p) => ({ value: p.id, label: `${p.name} [${p.code}]` })),
                 ]}
                 placeholder="Select product..."
-                searchable
               />
             </div>
 
@@ -115,7 +115,6 @@ export default function ProductHistoryListPage() {
                   ...mockWarehouses.map((w) => ({ value: w.id, label: w.name })),
                 ]}
                 placeholder="Select warehouse..."
-                searchable
               />
             </div>
 

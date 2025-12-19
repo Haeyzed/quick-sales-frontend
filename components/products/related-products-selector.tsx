@@ -11,7 +11,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Delete01Icon, ViewIcon } from "@hugeicons/core-free-icons"
 import { mockProducts } from "@/lib/mock-data/products"
-import type { Product } from "@/lib/types/products"
+import type { Product } from "@/lib/types/product"
 
 interface RelatedProductsSelectorProps {
   value: string[]

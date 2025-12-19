@@ -2,7 +2,7 @@
 import Image from "next/image"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
-import type { Product } from "@/lib/types/products"
+import type { Product } from "@/lib/types/product"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
@@ -26,7 +26,7 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle>Product Details</DialogTitle>
@@ -36,7 +36,7 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
             </Button>
           </div>
         </DialogHeader>
-
+        <div className="style-nova:-mx-4 style-nova:px-4 no-scrollbar style-vega:px-6 style-mira:px-4 style-maia:px-6 style-vega:-mx-6 style-maia:-mx-6 style-mira:-mx-4 style-lyra:-mx-4 style-lyra:px-4 max-h-[70vh] overflow-y-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             {product.images && product.images.length > 0 ? (
@@ -238,6 +238,7 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
             </div>
           </div>
         )}
+        </div>
       </DialogContent>
     </Dialog>
   )

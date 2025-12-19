@@ -1,40 +1,4 @@
-import type { Brand, Category, Unit, Tax, Warehouse, Product } from "@/lib/types/products"
-
-export const mockBrands: Brand[] = [
-  { id: "1", title: "Samsung" },
-  { id: "2", title: "Apple" },
-  { id: "3", title: "Sony" },
-  { id: "4", title: "LG" },
-  { id: "5", title: "Dell" },
-]
-
-export const mockCategories: Category[] = [
-  { id: "1", name: "Electronics" },
-  { id: "2", name: "Furniture" },
-  { id: "3", name: "Clothing" },
-  { id: "4", name: "Food & Beverages" },
-  { id: "5", name: "Books" },
-]
-
-export const mockUnits: Unit[] = [
-  { id: "1", unit_name: "Piece", base_unit: null },
-  { id: "2", unit_name: "Box", base_unit: "1", operation_value: 12, operator: "multiply" },
-  { id: "3", unit_name: "Carton", base_unit: "1", operation_value: 144, operator: "multiply" },
-  { id: "4", unit_name: "Kg", base_unit: null },
-  { id: "5", unit_name: "Liter", base_unit: null },
-]
-
-export const mockTaxes: Tax[] = [
-  { id: "1", name: "VAT 15%", rate: 15 },
-  { id: "2", name: "VAT 5%", rate: 5 },
-  { id: "3", name: "GST 18%", rate: 18 },
-]
-
-export const mockWarehouses: Warehouse[] = [
-  { id: "1", name: "Main Warehouse" },
-  { id: "2", name: "Branch Warehouse 1" },
-  { id: "3", name: "Branch Warehouse 2" },
-]
+import type { Product } from "@/lib/types/product"
 
 export const mockProducts: Product[] = [
   {
@@ -63,8 +27,8 @@ export const mockProducts: Product[] = [
     qty: 45,
     images: [
       "https://images.unsplash.com/photo-1610945265064-0e34e5519bbd?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&h=500&fit=crop",
       "https://images.unsplash.com/photo-1610945265064-0e34e5519bbd?w=500&h=500&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1610945265064-0e34e5519bbd?w=500&h=500&fit=crop",
     ],
     is_variant: false,
     is_batch: false,
@@ -105,7 +69,7 @@ export const mockProducts: Product[] = [
     qty: 12,
     images: [
       "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=500&h=500&fit=crop",
+      "https://images.unsplash.com/photo-151733671731-489689fd1ca8?w=500&h=500&fit=crop",
       "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=500&h=500&fit=crop",
     ],
     is_variant: true,
@@ -404,7 +368,7 @@ export const mockProducts: Product[] = [
     qty: 52,
     images: [
       "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=500&h=500&fit=crop",
+      "https://images.unsplash.com/photo-1511707171634-5f897ff09aa9?w=500&h=500&fit=crop",
       "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500&h=500&fit=crop",
     ],
     is_variant: true,
@@ -1051,7 +1015,7 @@ export const mockProducts: Product[] = [
     qty: 9,
     images: [
       "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1599623560574-39a9d5d31924?w=500&h=500&fit=crop",
+      "https://images.unsplash.com/photo-1599623560574-39d9d5d31924?w=500&h=500&fit=crop",
       "https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?w=500&h=500&fit=crop&q=80",
     ],
     is_variant: false,
@@ -1314,7 +1278,7 @@ export const mockProducts: Product[] = [
     qty: 85,
     images: [
       "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500&h=500&fit=crop",
-      "https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=500&h=500&fit=crop",
+      "https://images.unsplash.com/photo-15586425452-9d2a7deb7f62?w=500&h=500&fit=crop",
       "https://images.unsplash.com/photo-1587049352846-4a222e784d38?w=500&h=500&fit=crop&q=80",
     ],
     is_variant: false,

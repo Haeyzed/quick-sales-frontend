@@ -20,7 +20,6 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { RefreshIcon, Add01Icon, Cancel01Icon, Upload01Icon } from "@hugeicons/core-free-icons"
-import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses } from "@/lib/mock-data/products"
 import { ProductCombobox } from "./product-combobox"
 import { ComboProductTable } from "./combo-product-table"
 import { ComboProductSelector } from "./combo-product-selector"
@@ -31,10 +30,26 @@ import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Editor } from "@/components/blocks/editor-00/editor"
 import type { SerializedEditorState } from "lexical"
-import type { ComboProduct } from "@/lib/types/products"
+import type { ComboProduct } from "@/lib/types/product"
 import Image from "next/image"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
+import React from "react"
+import { Spinner } from "@/components/ui/spinner" // Assuming Spinner component exists
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { BrandForm } from "@/components/brands/brand-form"
+import { CategoryForm } from "@/components/categories/category-form"
+import { UnitForm } from "@/components/units/unit-form"
+import { TaxForm } from "@/components/taxes/tax-form"
+import { mockBrands } from "@/lib/mock-data/brands"
+import { mockCategories } from "@/lib/mock-data/categories"
+import { mockUnits } from "@/lib/mock-data/units"
+import { mockTaxes } from "@/lib/mock-data/taxes"
+import { mockWarehouses } from "@/lib/mock-data/warehouses"
+import type { BrandFormValues } from "@/lib/schemas/brand"
+import type { CategoryFormValues } from "@/lib/schemas/category"
+import type { UnitFormValues } from "@/lib/schemas/unit"
+import type { TaxFormValues } from "@/lib/schemas/tax"
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>
@@ -72,6 +87,11 @@ export function ProductForm({
       return null
     }
   })
+
+  const [isBrandDialogOpen, setIsBrandDialogOpen] = React.useState(false)
+  const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false)
+  const [isUnitDialogOpen, setIsUnitDialogOpen] = React.useState(false)
+  const [isTaxDialogOpen, setIsTaxDialogOpen] = React.useState(false)
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -129,6 +149,46 @@ export function ProductForm({
   const isInitialStock = form.watch("is_initial_stock")
   const isDiffPrice = form.watch("is_diffPrice")
   const isOnline = form.watch("is_online")
+
+  const handleCreateBrand = async (data: BrandFormValues) => {
+    const newBrand = {
+      id: `brand-${Date.now()}`,
+      ...data,
+    }
+    mockBrands.push(newBrand)
+    form.setValue("brand_id", newBrand.id)
+    setIsBrandDialogOpen(false)
+  }
+
+  const handleCreateCategory = async (data: CategoryFormValues) => {
+    const newCategory = {
+      id: `cat-${Date.now()}`,
+      ...data,
+    }
+    mockCategories.push(newCategory)
+    form.setValue("category_id", newCategory.id)
+    setIsCategoryDialogOpen(false)
+  }
+
+  const handleCreateUnit = async (data: UnitFormValues) => {
+    const newUnit = {
+      id: `unit-${Date.now()}`,
+      ...data,
+    }
+    mockUnits.push(newUnit)
+    form.setValue("unit_id", newUnit.id)
+    setIsUnitDialogOpen(false)
+  }
+
+  const handleCreateTax = async (data: TaxFormValues) => {
+    const newTax = {
+      id: `tax-${Date.now()}`,
+      ...data,
+    }
+    mockTaxes.push(newTax)
+    form.setValue("tax_id", newTax.id)
+    setIsTaxDialogOpen(false)
+  }
 
   useEffect(() => {
     if (productType === "combo") {
@@ -336,6 +396,7 @@ export function ProductForm({
             />
           )}
 
+          {/* Brand */}
           <FormField
             control={form.control}
             name="brand_id"
@@ -349,7 +410,7 @@ export function ProductForm({
                     options={mockBrands.map((b) => ({ value: b.id, label: b.title }))}
                     placeholder="Select brand..."
                   />
-                  <Button type="button" variant="secondary" size="icon">
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)}>
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -358,6 +419,7 @@ export function ProductForm({
             )}
           />
 
+          {/* Category */}
           <FormField
             control={form.control}
             name="category_id"
@@ -371,7 +433,7 @@ export function ProductForm({
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
                     placeholder="Select category..."
                   />
-                  <Button type="button" variant="secondary" size="icon">
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)}>
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -418,18 +480,24 @@ export function ProductForm({
 
         {productType !== "service" && productType !== "digital" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Product Unit */}
             <FormField
               control={form.control}
               name="unit_id"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Product Unit *</FormLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
-                    placeholder="Select unit..."
-                  />
+                  <div className="flex gap-2">
+                    <ProductCombobox
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                      placeholder="Select unit..."
+                    />
+                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)}>
+                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -627,7 +695,7 @@ export function ProductForm({
                     ]}
                     placeholder="Select tax..."
                   />
-                  <Button type="button" variant="secondary" size="icon">
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -1300,9 +1368,68 @@ export function ProductForm({
           <Button type="button" variant="outline">
             Cancel
           </Button>
-          <Button type="submit">{isEdit ? "Update Product" : "Create Product"}</Button>
+          <Button type="submit" disabled={form.formState.isSubmitting}>
+            {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
+            {isEdit ? "Update Product" : "Create Product"}
+          </Button>
         </div>
       </form>
+
+      <Dialog open={isBrandDialogOpen} onOpenChange={setIsBrandDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Brand</DialogTitle>
+            <DialogDescription>Create a new brand</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1">
+            <BrandForm
+              onSubmit={handleCreateBrand}
+              onCancel={() => setIsBrandDialogOpen(false)}
+              generalSettings={generalSettings}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isCategoryDialogOpen} onOpenChange={setIsCategoryDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Category</DialogTitle>
+            <DialogDescription>Create a new category</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1">
+            <CategoryForm
+              onSubmit={handleCreateCategory}
+              onCancel={() => setIsCategoryDialogOpen(false)}
+              generalSettings={generalSettings}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUnitDialogOpen} onOpenChange={setIsUnitDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Unit</DialogTitle>
+            <DialogDescription>Create a new unit of measurement</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1">
+            <UnitForm onSubmit={handleCreateUnit} onCancel={() => setIsUnitDialogOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isTaxDialogOpen} onOpenChange={setIsTaxDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Tax</DialogTitle>
+            <DialogDescription>Create a new tax rate</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-y-auto px-1">
+            <TaxForm onSubmit={handleCreateTax} onCancel={() => setIsTaxDialogOpen(false)} />
+          </div>
+        </DialogContent>
+      </Dialog>
     </Form>
   )
 }

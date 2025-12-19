@@ -1,9 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Image from "next/image"
-import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
-import { cn } from "@/lib/utils"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -17,9 +14,9 @@ import {
   useReactTable,
 } from "@tanstack/react-table"
 import { HugeiconsIcon } from "@hugeicons/react"
+import Image from "next/image"
 import {
   UnfoldMoreIcon,
-  ViewIcon,
   Edit01Icon,
   Delete01Icon,
   MoreHorizontalCircle01Icon,
@@ -42,22 +39,21 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { Product } from "@/lib/types/product"
+import type { Brand } from "@/lib/types/brand"
 
-interface ProductDataTableProps {
-  data: Product[]
-  onView?: (product: Product) => void
-  onEdit?: (product: Product) => void
-  onDelete?: (product: Product) => void
+interface BrandDataTableProps {
+  data: Brand[]
+  onEdit?: (brand: Brand) => void
+  onDelete?: (brand: Brand) => void
 }
 
-export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductDataTableProps) {
+export function BrandDataTable({ data, onEdit, onDelete }: BrandDataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
 
-  const columns: ColumnDef<Product>[] = [
+  const columns: ColumnDef<Brand>[] = [
     {
       id: "select",
       header: ({ table }) => (
@@ -79,148 +75,42 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
       enableHiding: false,
     },
     {
-      accessorKey: "images",
+      accessorKey: "image",
       header: "Image",
       cell: ({ row }) => {
-        const product = row.original
-        const imageUrl = product.images?.[0]
-        return (
-          <div className="h-12 w-12 relative">
-            {imageUrl ? (
-              <ImageZoom
-                zoomMargin={100}
-                backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-              >
-                <Image
-                  src={imageUrl}
-                  alt={product.name}
-                  fill
-                  className="rounded object-cover"
-                  sizes="48px"
-                />
-              </ImageZoom>
-            ) : (
-              <div className="h-full w-full rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">
-                No Image
-              </div>
-            )}
+        const brand = row.original
+        return brand.image ? (
+          <Image
+            src={brand.image || "/placeholder.svg"}
+            alt={brand.title}
+            width={50}
+            height={50}
+            className="rounded-md object-cover"
+          />
+        ) : (
+          <div className="h-[50px] w-[50px] rounded-md bg-muted flex items-center justify-center text-xs text-muted-foreground">
+            No Image
           </div>
         )
       },
-      enableSorting: false,
     },
     {
-      accessorKey: "name",
+      accessorKey: "title",
       header: ({ column }) => {
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Product
+            Brand Name
             <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
           </Button>
         )
       },
-      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
-    },
-    {
-      accessorKey: "code",
-      header: "Code",
-      cell: ({ row }) => <div className="font-mono text-sm">{row.getValue("code")}</div>,
-    },
-    {
-      accessorKey: "brand_name",
-      header: "Brand",
-      cell: ({ row }) => <div>{row.getValue("brand_name") || "-"}</div>,
-    },
-    {
-      accessorKey: "category_name",
-      header: "Category",
-    },
-    {
-      accessorKey: "qty",
-      header: ({ column }) => {
-        return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Quantity
-            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
-      cell: ({ row }) => {
-        const qty = row.getValue("qty") as number
-        const alertQty = row.original.alert_quantity
-        const isLow = alertQty && qty <= alertQty
-
-        return <div className={isLow ? "text-destructive font-semibold" : ""}>{qty}</div>
-      },
-    },
-    {
-      accessorKey: "unit_name",
-      header: "Unit",
-    },
-    {
-      accessorKey: "price",
-      header: ({ column }) => {
-        return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
-            Price
-            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
-          </Button>
-        )
-      },
-      cell: ({ row }) => {
-        const price = Number.parseFloat(row.getValue("price"))
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(price)
-        return <div className="font-medium">{formatted}</div>
-      },
-    },
-    {
-      accessorKey: "cost",
-      header: "Cost",
-      cell: ({ row }) => {
-        const cost = Number.parseFloat(row.getValue("cost"))
-        const formatted = new Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-        }).format(cost)
-        return <div>{formatted}</div>
-      },
-    },
-    {
-      id: "stock_worth",
-      header: "Stock Worth",
-      cell: ({ row }) => {
-        const price = row.original.price
-        const cost = row.original.cost
-        const qty = row.original.qty
-        const priceWorth = price * qty
-        const costWorth = cost * qty
-
-        return (
-          <div className="text-sm">
-            <div className="font-medium">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(priceWorth)}
-            </div>
-            <div className="text-muted-foreground">
-              {new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: "USD",
-              }).format(costWorth)}
-            </div>
-          </div>
-        )
-      },
+      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
     },
     {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        const product = row.original
+        const brand = row.original
 
         return (
           <DropdownMenu>
@@ -235,16 +125,12 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => onView?.(product)}>
-                  <HugeiconsIcon icon={ViewIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
-                  View Details
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => onEdit?.(product)}>
+                <DropdownMenuItem onClick={() => onEdit?.(brand)}>
                   <HugeiconsIcon icon={Edit01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onDelete?.(product)} className="text-destructive">
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onDelete?.(brand)} className="text-destructive">
                   <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
                   Delete
                 </DropdownMenuItem>
@@ -279,9 +165,9 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
     <div className="w-full space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Filter products..."
-          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
+          placeholder="Filter brands..."
+          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
       </div>

@@ -9,13 +9,13 @@ import { ProductDataTable } from "@/components/products/product-data-table"
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog"
 import {
   mockProducts,
-  mockBrands,
-  mockCategories,
-  mockUnits,
-  mockTaxes,
-  mockWarehouses,
-} from "@/lib/mock-data/products"
-import type { Product } from "@/lib/types/products"
+ } from "@/lib/mock-data/products"
+import { mockBrands } from "@/lib/mock-data/brands"
+import { mockCategories } from "@/lib/mock-data/categories"
+import { mockUnits } from "@/lib/mock-data/units"
+import { mockTaxes } from "@/lib/mock-data/taxes"
+import { mockWarehouses } from "@/lib/mock-data/warehouses"
+import type { Product } from "@/lib/types/product"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProductCombobox } from "@/components/products/product-combobox"
 

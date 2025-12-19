@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Delete01Icon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { ComboProduct } from "@/lib/types/products"
+import type { ComboProduct } from "@/lib/types/product"
 import { mockProducts } from "@/lib/mock-data/products"
 
 interface ComboProductTableProps {

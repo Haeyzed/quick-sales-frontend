@@ -3,13 +3,43 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Package01Icon, BarChartIcon, WorkHistoryIcon, BarCode01Icon, Image01Icon } from "@hugeicons/core-free-icons"
+import {
+  Package01Icon,
+  BarChartIcon,
+  WorkHistoryIcon,
+  BarCode01Icon,
+  Image01Icon,
+  Tag01Icon,
+  GridIcon,
+  RulerIcon,
+  // Receipt01Icon,
+} from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 
 const menuItems = [
   {
     title: "Products",
     href: "/products",
+    icon: Package01Icon,
+  },
+  {
+    title: "Categories",
+    href: "/categories",
+    icon: GridIcon,
+  },
+  {
+    title: "Brands",
+    href: "/brands",
+    icon: Tag01Icon,
+  },
+  {
+    title: "Units",
+    href: "/units",
+    icon: RulerIcon,
+  },
+  {
+    title: "Taxes",
+    href: "/taxes",
     icon: Package01Icon,
   },
   {
