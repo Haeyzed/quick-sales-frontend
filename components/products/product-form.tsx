@@ -17,11 +17,10 @@ import {
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { RefreshIcon, Add01Icon, ImageUploadIcon, Cancel01Icon, Upload01Icon } from "@hugeicons/core-free-icons"
-import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses, mockProducts } from "@/lib/mock-data/products"
+import { RefreshIcon, Add01Icon, Cancel01Icon, Upload01Icon } from "@hugeicons/core-free-icons"
+import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses } from "@/lib/mock-data/products"
 import { ProductCombobox } from "./product-combobox"
 import { ComboProductTable } from "./combo-product-table"
 import { ComboProductSelector } from "./combo-product-selector"
@@ -29,11 +28,10 @@ import { DateTimePicker } from "@/components/shared/date-time-picker"
 import { RelatedProductsSelector } from "./related-products-selector"
 import { TagInput } from "@/components/ui/tag-input"
 import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Editor } from "@/components/blocks/editor-00/editor"
 import type { SerializedEditorState } from "lexical"
-import type { ComboProduct, Product } from "@/lib/types/products"
+import type { ComboProduct } from "@/lib/types/products"
 import Image from "next/image"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
@@ -60,11 +58,11 @@ export function ProductForm({
   const [imagesUpload, setImagesUpload] = useState<File[]>([])
   const [productDetailsEditorState, setProductDetailsEditorState] = useState<SerializedEditorState | null>(() => {
     if (!initialData?.product_details) return null
-    
-    if (typeof initialData.product_details !== 'string' || initialData.product_details.trim() === '') {
+
+    if (typeof initialData.product_details !== "string" || initialData.product_details.trim() === "") {
       return null
     }
-    
+
     // Try to parse as JSON (for editor state)
     try {
       return JSON.parse(initialData.product_details)
@@ -133,6 +131,13 @@ export function ProductForm({
   const isOnline = form.watch("is_online")
 
   useEffect(() => {
+    if (productType === "combo") {
+      form.setValue("is_variant", false)
+      form.setValue("is_diffPrice", false)
+    }
+  }, [productType, form])
+
+  useEffect(() => {
     if (isBatch) {
       form.setValue("is_variant", false)
       form.setValue("is_initial_stock", false)
@@ -163,7 +168,7 @@ export function ProductForm({
       data.combo_products = comboProducts
     }
     data.related_products = relatedProducts
-    
+
     // Convert File objects to strings (file names)
     if (fileUpload.length > 0) {
       data.file = fileUpload[0].name
@@ -171,7 +176,7 @@ export function ProductForm({
     if (imagesUpload.length > 0) {
       data.images = imagesUpload.map((img) => img.name)
     }
-    
+
     onSubmit(data)
   }
 
@@ -324,9 +329,7 @@ export function ProductForm({
                       </FileUploadList>
                     </FileUpload>
                   </FormControl>
-                  <FormDescription>
-                    Upload a file up to 50MB.
-                  </FormDescription>
+                  <FormDescription>Upload a file up to 50MB.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -345,7 +348,6 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockBrands.map((b) => ({ value: b.id, label: b.title }))}
                     placeholder="Select brand..."
-                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
@@ -368,7 +370,6 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
                     placeholder="Select category..."
-                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
@@ -386,9 +387,7 @@ export function ProductForm({
               <FormLabel>Add Product</FormLabel>
               <ComboProductSelector
                 onAddProduct={(product) => {
-                  const existingIndex = comboProducts.findIndex(
-                    (p) => p.product_id === product.id,
-                  )
+                  const existingIndex = comboProducts.findIndex((p) => p.product_id === product.id)
                   if (existingIndex === -1) {
                     setComboProducts([
                       ...comboProducts,
@@ -430,7 +429,6 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select unit..."
-                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -448,7 +446,6 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select sale unit..."
-                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -466,7 +463,6 @@ export function ProductForm({
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
                     placeholder="Select purchase unit..."
-                    
                   />
                   <FormMessage />
                 </FormItem>
@@ -630,7 +626,6 @@ export function ProductForm({
                       ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
                     ]}
                     placeholder="Select tax..."
-                    
                   />
                   <Button type="button" variant="secondary" size="icon">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
@@ -904,7 +899,8 @@ export function ProductForm({
                 </div>
               )}
               <FormDescription>
-                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will be base image.
+                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will
+                be base image.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -932,7 +928,7 @@ export function ProductForm({
           )}
         />
 
-        {!isBatch && (
+        {!isBatch && productType !== "combo" && (
           <FormField
             control={form.control}
             name="is_variant"
@@ -951,103 +947,103 @@ export function ProductForm({
 
         {isVariant && (
           <>
-              {variantOptions.map((variant, index) => (
-                <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4">
-                  <div className="md:col-span-4">
-                    <FormLabel>Option *</FormLabel>
-                    <Input
-                      placeholder="Size, Color etc"
-                      value={variant.option}
-                      onChange={(e) => {
-                        const newOptions = [...variantOptions]
-                        newOptions[index].option = e.target.value
-                        setVariantOptions(newOptions)
-                      }}
-                    />
-                  </div>
-                  <div className="md:col-span-7">
-                    <FormLabel>Value *</FormLabel>
-                    <TagInput
-                      value={variant.value.split(",").filter(Boolean)}
-                      onChange={(tags) => {
-                        const newOptions = [...variantOptions]
-                        newOptions[index].value = tags.join(",")
-                        setVariantOptions(newOptions)
-                      }}
-                      placeholder="Type value and press Enter"
-                    />
-                  </div>
-                  <div className="md:col-span-1 flex items-end">
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      onClick={() => {
-                        setVariantOptions(variantOptions.filter((_, i) => i !== index))
-                      }}
-                    >
-                      <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
-                    </Button>
-                  </div>
+            {variantOptions.map((variant, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <div className="md:col-span-4">
+                  <FormLabel>Option *</FormLabel>
+                  <Input
+                    placeholder="Size, Color etc"
+                    value={variant.option}
+                    onChange={(e) => {
+                      const newOptions = [...variantOptions]
+                      newOptions[index].option = e.target.value
+                      setVariantOptions(newOptions)
+                    }}
+                  />
                 </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setVariantOptions([...variantOptions, { option: "", value: "" }])}
-              >
-                <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
-                Add More Variant
-              </Button>
+                <div className="md:col-span-7">
+                  <FormLabel>Value *</FormLabel>
+                  <TagInput
+                    value={variant.value.split(",").filter(Boolean)}
+                    onChange={(tags) => {
+                      const newOptions = [...variantOptions]
+                      newOptions[index].value = tags.join(",")
+                      setVariantOptions(newOptions)
+                    }}
+                    placeholder="Type value and press Enter"
+                  />
+                </div>
+                <div className="md:col-span-1 flex items-end">
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => {
+                      setVariantOptions(variantOptions.filter((_, i) => i !== index))
+                    }}
+                  >
+                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setVariantOptions([...variantOptions, { option: "", value: "" }])}
+            >
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
+              Add More Variant
+            </Button>
 
-              {variantOptions.some((v) => v.option && v.value) && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-medium mb-2">Generated Variants</h4>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Item Code</TableHead>
-                        <TableHead>Additional Cost</TableHead>
-                        <TableHead>Additional Price</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {variantOptions
-                        .filter((v) => v.option && v.value)
-                        .flatMap((v) =>
-                          v.value
-                            .split(",")
-                            .filter(Boolean)
-                            .map((val) => ({
-                              option: v.option,
-                              value: val.trim(),
-                            })),
-                        )
-                        .map((variant, idx) => (
-                          <TableRow key={idx}>
-                            <TableCell>
-                              {variant.option}: {variant.value}
-                            </TableCell>
-                            <TableCell>
-                              <Input placeholder="Item code" className="w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
-                            </TableCell>
-                            <TableCell>
-                              <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              )}
+            {variantOptions.some((v) => v.option && v.value) && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium mb-2">Generated Variants</h4>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Item Code</TableHead>
+                      <TableHead>Additional Cost</TableHead>
+                      <TableHead>Additional Price</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {variantOptions
+                      .filter((v) => v.option && v.value)
+                      .flatMap((v) =>
+                        v.value
+                          .split(",")
+                          .filter(Boolean)
+                          .map((val) => ({
+                            option: v.option,
+                            value: val.trim(),
+                          })),
+                      )
+                      .map((variant, idx) => (
+                        <TableRow key={idx}>
+                          <TableCell>
+                            {variant.option}: {variant.value}
+                          </TableCell>
+                          <TableCell>
+                            <Input placeholder="Item code" className="w-32" />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
+                          </TableCell>
+                          <TableCell>
+                            <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </>
         )}
 
-        {mockWarehouses.length > 0 && (
+        {mockWarehouses.length > 0 && productType !== "combo" && (
           <FormField
             control={form.control}
             name="is_diffPrice"
