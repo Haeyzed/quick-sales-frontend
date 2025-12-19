@@ -2,12 +2,14 @@
 
 import { useState } from "react"
 import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FieldLabel } from "@/components/ui/field"
 import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { ViewIcon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, ViewIcon } from "@hugeicons/core-free-icons"
 import { mockProducts } from "@/lib/mock-data/products"
 
 interface RelatedProduct {
@@ -76,13 +78,18 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
                   >
                     <div className="flex items-center gap-2">
                       {product.images?.[0] && (
-                        <Image
-                          src={product.images[0] || "/placeholder.svg"}
-                          alt={product.name}
-                          width={32}
-                          height={32}
-                          className="rounded object-cover"
-                        />
+                        <ImageZoom
+                          zoomMargin={100}
+                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                        >
+                          <Image
+                            src={product.images[0] || "/placeholder.svg"}
+                            alt={product.name}
+                            width={32}
+                            height={32}
+                            className="rounded object-cover"
+                          />
+                        </ImageZoom>
                       )}
                       <div className="text-left">
                         <div className="font-medium text-sm">{product.name}</div>
@@ -104,13 +111,18 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
             {selectedProducts.map((product) => (
               <Item key={product.id} variant="outline">
                 <ItemMedia variant="image">
-                  <Image
-                    src={product.images?.[0] || "/placeholder.svg?height=40&width=40"}
-                    alt={product.name}
-                    width={40}
-                    height={40}
-                    className="object-cover"
-                  />
+                  <ImageZoom
+                    zoomMargin={100}
+                    backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                  >
+                    <Image
+                      src={product.images?.[0] || "/placeholder.svg?height=40&width=40"}
+                      alt={product.name}
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                    />
+                  </ImageZoom>
                 </ItemMedia>
                 <ItemContent>
                   <ItemTitle>{product.name}</ItemTitle>
@@ -120,8 +132,8 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
                   <Button variant="ghost" size="icon-sm">
                     <HugeiconsIcon icon={ViewIcon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleRemove(product.id)}>
-                    Remove
+                  <Button type="button" variant="destructive" size="icon" onClick={() => handleRemove(product.id)}>
+                    <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </ItemActions>
               </Item>

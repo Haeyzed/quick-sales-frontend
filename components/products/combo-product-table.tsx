@@ -1,10 +1,15 @@
 "use client"
 
-import type { ComboProduct } from "@/lib/types/product"
+import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Trash2 } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Delete01Icon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import type { ComboProduct } from "@/lib/types/products"
+import { mockProducts } from "@/lib/mock-data/products"
 
 interface ComboProductTableProps {
   products: ComboProduct[]
@@ -46,11 +51,33 @@ export function ComboProductTable({ products, onChange }: ComboProductTableProps
           </TableRow>
         </TableHeader>
         <TableBody>
-          {products.map((product, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                {product.product_name} [{product.product_code}]
-              </TableCell>
+          {products.map((product, index) => {
+            const fullProduct = mockProducts.find((p) => p.id === product.product_id)
+            const productImage = fullProduct?.images?.[0]
+            return (
+              <TableRow key={index}>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {productImage && (
+                      <ImageZoom
+                        zoomMargin={100}
+                        backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                      >
+                        <Image
+                          src={productImage}
+                          alt={product.product_name}
+                          width={40}
+                          height={40}
+                          className="rounded object-cover"
+                        />
+                      </ImageZoom>
+                    )}
+                    <div>
+                      <div className="font-medium">{product.product_name}</div>
+                      <div className="text-sm text-muted-foreground">[{product.product_code}]</div>
+                    </div>
+                  </div>
+                </TableCell>
               <TableCell>
                 <Input
                   type="number"
@@ -85,11 +112,12 @@ export function ComboProductTable({ products, onChange }: ComboProductTableProps
               <TableCell>{product.subtotal.toFixed(2)}</TableCell>
               <TableCell>
                 <Button type="button" variant="destructive" size="icon" onClick={() => handleDelete(index)}>
-                  <Trash2 className="h-4 w-4" />
+                  <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="h-4 w-4" />
                 </Button>
               </TableCell>
             </TableRow>
-          ))}
+            )
+          })}
         </TableBody>
       </Table>
     </div>

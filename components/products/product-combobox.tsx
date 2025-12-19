@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+
 import {
   Combobox,
   ComboboxContent,
@@ -20,10 +20,8 @@ interface ProductComboboxProps {
   value?: string
   onChange: (value: string) => void
   placeholder?: string
-  searchable?: boolean
   className?: string
   showClear?: boolean
-  keepOpenOnSelect?: boolean
 }
 
 export function ProductCombobox({
@@ -31,30 +29,26 @@ export function ProductCombobox({
   value,
   onChange,
   placeholder = "Select option...",
-  searchable = false,
   className,
   showClear = true,
-  keepOpenOnSelect = false,
 }: ProductComboboxProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-
-  const filteredOptions = searchable
-    ? options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()))
-    : options
-
   return (
     <Combobox
-      items={filteredOptions}
+      items={options}
       value={value}
-      onValueChange={onChange}
-      keepOpenOnSelect={keepOpenOnSelect}
-      onInputValueChange={searchable ? setSearchQuery : undefined}
+      onValueChange={(value) => onChange(value || "")}
     >
-      <ComboboxInput placeholder={placeholder} showClear={showClear} className={className} />
+      <ComboboxInput
+        placeholder={placeholder}
+        showClear={showClear}
+        className={className}
+      />
+
       <ComboboxContent>
         <ComboboxEmpty>No option found.</ComboboxEmpty>
+
         <ComboboxList>
-          {filteredOptions.map((item) => (
+          {options.map((item) => (
             <ComboboxItem key={item.value} value={item.value}>
               {item.label}
             </ComboboxItem>

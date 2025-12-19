@@ -1,13 +1,15 @@
 "use client"
 import Image from "next/image"
-import type { Product } from "@/lib/types/product"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
+import type { Product } from "@/lib/types/products"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Printer } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { PrinterIcon } from "@hugeicons/core-free-icons"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
-import { Card, CardContent } from "@/components/ui/card"
 
 interface ProductDetailsDialogProps {
   product: Product | null
@@ -29,7 +31,7 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
           <div className="flex items-center justify-between">
             <DialogTitle>Product Details</DialogTitle>
             <Button onClick={handlePrint} variant="outline" size="sm">
-              <Printer className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={PrinterIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
               Print
             </Button>
           </div>
@@ -38,21 +40,22 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
             {product.images && product.images.length > 0 ? (
-              <Carousel className="w-full">
+              <Carousel className="w-full" opts={{ loop: true }}>
                 <CarouselContent>
                   {product.images.map((image, index) => (
                     <CarouselItem key={index}>
-                      <Card>
-                        <CardContent className="flex aspect-square items-center justify-center p-0">
-                          <Image
-                            src={image || "/placeholder.svg"}
-                            alt={`${product.name} - Image ${index + 1}`}
-                            width={400}
-                            height={400}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
-                        </CardContent>
-                      </Card>
+                      <ImageZoom
+                        zoomMargin={100}
+                        backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                      >
+                        <Image
+                          src={image || "/placeholder.svg"}
+                          alt={`${product.name} - Image ${index + 1}`}
+                          width={400}
+                          height={400}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      </ImageZoom>
                     </CarouselItem>
                   ))}
                 </CarouselContent>

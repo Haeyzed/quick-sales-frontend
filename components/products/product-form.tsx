@@ -5,22 +5,38 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { type ProductFormValues, productSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import {
+  FileUpload,
+  FileUploadDropzone,
+  FileUploadItem,
+  FileUploadItemDelete,
+  FileUploadItemMetadata,
+  FileUploadItemPreview,
+  FileUploadList,
+  FileUploadTrigger,
+} from "@/components/ui/file-upload"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { RefreshIcon, Add01Icon, ImageUploadIcon, Cancel01Icon } from "@hugeicons/core-free-icons"
-import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses } from "@/lib/mock-data/products"
+import { RefreshIcon, Add01Icon, ImageUploadIcon, Cancel01Icon, Upload01Icon } from "@hugeicons/core-free-icons"
+import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses, mockProducts } from "@/lib/mock-data/products"
 import { ProductCombobox } from "./product-combobox"
 import { ComboProductTable } from "./combo-product-table"
+import { ComboProductSelector } from "./combo-product-selector"
 import { DateTimePicker } from "@/components/shared/date-time-picker"
 import { RelatedProductsSelector } from "./related-products-selector"
 import { TagInput } from "@/components/ui/tag-input"
 import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { ComboProduct } from "@/lib/types/product"
+import { Editor } from "@/components/blocks/editor-00/editor"
+import type { SerializedEditorState } from "lexical"
+import type { ComboProduct, Product } from "@/lib/types/products"
+import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>
@@ -40,6 +56,24 @@ export function ProductForm({
   const [variantOptions, setVariantOptions] = useState<Array<{ option: string; value: string }>>([
     { option: "", value: "" },
   ])
+  const [fileUpload, setFileUpload] = useState<File[]>([])
+  const [imagesUpload, setImagesUpload] = useState<File[]>([])
+  const [productDetailsEditorState, setProductDetailsEditorState] = useState<SerializedEditorState | null>(() => {
+    if (!initialData?.product_details) return null
+    
+    if (typeof initialData.product_details !== 'string' || initialData.product_details.trim() === '') {
+      return null
+    }
+    
+    // Try to parse as JSON (for editor state)
+    try {
+      return JSON.parse(initialData.product_details)
+    } catch {
+      // If it's not valid JSON, it's likely a plain string from old data
+      // Return null to start with empty editor, or you could convert it to editor format
+      return null
+    }
+  })
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
@@ -129,6 +163,15 @@ export function ProductForm({
       data.combo_products = comboProducts
     }
     data.related_products = relatedProducts
+    
+    // Convert File objects to strings (file names)
+    if (fileUpload.length > 0) {
+      data.file = fileUpload[0].name
+    }
+    if (imagesUpload.length > 0) {
+      data.images = imagesUpload.map((img) => img.name)
+    }
+    
     onSubmit(data)
   }
 
@@ -240,8 +283,50 @@ export function ProductForm({
                 <FormItem>
                   <FormLabel>Attach File *</FormLabel>
                   <FormControl>
-                    <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0]?.name)} />
+                    <FileUpload
+                      value={fileUpload}
+                      onValueChange={(files) => {
+                        setFileUpload(files)
+                        field.onChange(files[0]?.name || "")
+                      }}
+                      accept="*/*"
+                      maxFiles={1}
+                      maxSize={50 * 1024 * 1024}
+                      onFileReject={(_, message) => {
+                        form.setError("file", {
+                          message,
+                        })
+                      }}
+                    >
+                      <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
+                        <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
+                        Drag and drop or
+                        <FileUploadTrigger asChild>
+                          <Button variant="link" size="sm" className="p-0">
+                            choose file
+                          </Button>
+                        </FileUploadTrigger>
+                        to upload
+                      </FileUploadDropzone>
+                      <FileUploadList>
+                        {fileUpload.map((file, index) => (
+                          <FileUploadItem key={index} value={file}>
+                            <FileUploadItemPreview />
+                            <FileUploadItemMetadata />
+                            <FileUploadItemDelete asChild>
+                              <Button variant="ghost" size="icon" className="size-7">
+                                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                                <span className="sr-only">Delete</span>
+                              </Button>
+                            </FileUploadItemDelete>
+                          </FileUploadItem>
+                        ))}
+                      </FileUploadList>
+                    </FileUpload>
                   </FormControl>
+                  <FormDescription>
+                    Upload a file up to 50MB.
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -299,9 +384,30 @@ export function ProductForm({
           <div className="space-y-4">
             <div>
               <FormLabel>Add Product</FormLabel>
-              <div className="flex gap-2 mt-2">
-                <Input placeholder="Please type product code and select" className="flex-1" />
-              </div>
+              <ComboProductSelector
+                onAddProduct={(product) => {
+                  const existingIndex = comboProducts.findIndex(
+                    (p) => p.product_id === product.id,
+                  )
+                  if (existingIndex === -1) {
+                    setComboProducts([
+                      ...comboProducts,
+                      {
+                        product_id: product.id,
+                        product_name: product.name,
+                        product_code: product.code,
+                        wastage_percent: 0,
+                        quantity: 1,
+                        unit_id: product.unit_id,
+                        unit_cost: product.cost || 0,
+                        unit_price: product.price || 0,
+                        subtotal: product.price || 0,
+                      },
+                    ])
+                  }
+                }}
+                existingProductIds={comboProducts.map((p) => p.product_id)}
+              />
             </div>
 
             <div>
@@ -703,31 +809,24 @@ export function ProductForm({
           )}
 
           {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Initial Stock by Warehouse</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Warehouse</TableHead>
-                      <TableHead>Quantity</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {mockWarehouses.map((warehouse) => (
-                      <TableRow key={warehouse.id}>
-                        <TableCell>{warehouse.name}</TableCell>
-                        <TableCell>
-                          <Input type="number" min="0" placeholder="0" className="w-32" />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Warehouse</TableHead>
+                  <TableHead>Quantity</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockWarehouses.map((warehouse) => (
+                  <TableRow key={warehouse.id}>
+                    <TableCell>{warehouse.name}</TableCell>
+                    <TableCell>
+                      <Input type="number" min="0" placeholder="0" className="w-32" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
         </div>
 
@@ -737,20 +836,76 @@ export function ProductForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Product Image</FormLabel>
-              <p className="text-sm text-muted-foreground">
-                You can upload multiple images. Only jpeg, jpg, png, gif files can be uploaded. First image will be base
-                image.
-              </p>
               <FormControl>
-                <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
-                  <HugeiconsIcon
-                    icon={ImageUploadIcon}
-                    strokeWidth={2}
-                    className="h-12 w-12 mx-auto mb-4 text-muted-foreground"
-                  />
-                  <Input type="file" multiple accept="image/*" className="cursor-pointer" />
-                </div>
+                <FileUpload
+                  value={imagesUpload}
+                  onValueChange={(files) => {
+                    setImagesUpload(files)
+                    field.onChange(files.map((f) => f.name))
+                  }}
+                  accept="image/*"
+                  maxFiles={10}
+                  maxSize={5 * 1024 * 1024}
+                  onFileReject={(_, message) => {
+                    form.setError("images", {
+                      message,
+                    })
+                  }}
+                  multiple
+                >
+                  <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
+                    <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
+                    Drag and drop or
+                    <FileUploadTrigger asChild>
+                      <Button variant="link" size="sm" className="p-0">
+                        choose files
+                      </Button>
+                    </FileUploadTrigger>
+                    to upload
+                  </FileUploadDropzone>
+                  <FileUploadList>
+                    {imagesUpload.map((file, index) => (
+                      <FileUploadItem key={index} value={file}>
+                        <FileUploadItemPreview />
+                        <FileUploadItemMetadata />
+                        <FileUploadItemDelete asChild>
+                          <Button variant="ghost" size="icon" className="size-7">
+                            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </FileUploadItemDelete>
+                      </FileUploadItem>
+                    ))}
+                  </FileUploadList>
+                </FileUpload>
               </FormControl>
+              {/* Existing Images Display */}
+              {initialData?.images && initialData.images.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">Existing Images</p>
+                  <div className="grid grid-cols-4 gap-4">
+                    {initialData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                        <ImageZoom
+                          zoomMargin={100}
+                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                        >
+                          <Image
+                            src={imageUrl || "/placeholder.svg"}
+                            alt={`Existing image ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                          />
+                        </ImageZoom>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <FormDescription>
+                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will be base image.
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -763,7 +918,14 @@ export function ProductForm({
             <FormItem>
               <FormLabel>Product Details</FormLabel>
               <FormControl>
-                <Textarea rows={3} placeholder="Enter product details..." {...field} />
+                <Editor
+                  editorSerializedState={productDetailsEditorState || undefined}
+                  onSerializedChange={(value) => {
+                    setProductDetailsEditorState(value)
+                    // Convert editor state to JSON string for form
+                    field.onChange(JSON.stringify(value))
+                  }}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -903,31 +1065,24 @@ export function ProductForm({
         )}
 
         {isDiffPrice && mockWarehouses.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Warehouse Prices</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Warehouse</TableHead>
-                    <TableHead>Price</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {mockWarehouses.map((warehouse) => (
-                    <TableRow key={warehouse.id}>
-                      <TableCell>{warehouse.name}</TableCell>
-                      <TableCell>
-                        <Input type="number" step="0.01" min="0" placeholder="0.00" className="w-32" />
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </CardContent>
-          </Card>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Warehouse</TableHead>
+                <TableHead>Price</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockWarehouses.map((warehouse) => (
+                <TableRow key={warehouse.id}>
+                  <TableCell>{warehouse.name}</TableCell>
+                  <TableCell>
+                    <Input type="number" step="0.01" min="0" placeholder="0.00" className="w-32" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
 
         <FormField

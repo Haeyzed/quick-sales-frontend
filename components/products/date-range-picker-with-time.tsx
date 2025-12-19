@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { CalendarIcon } from "lucide-react"
-import type { DateRange } from "react-day-picker"
 import { HugeiconsIcon } from "@hugeicons/react"
+import { Calendar01Icon } from "@hugeicons/core-free-icons"
+import type { DateRange } from "react-day-picker"
 import { Clock03Icon } from "@hugeicons/core-free-icons"
 
 import { cn } from "@/lib/utils"
@@ -63,7 +63,7 @@ export function DateRangePickerWithTime({
           variant="outline"
           className={cn("justify-start text-left font-normal w-full", !dateRange && "text-muted-foreground")}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
+          <HugeiconsIcon icon={Calendar01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
           {dateRange?.from ? (
             dateRange.to ? (
               <>

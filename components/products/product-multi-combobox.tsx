@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { Check, ChevronsUpDown, X } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Tick02Icon, ArrowDown01Icon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
@@ -76,7 +77,7 @@ export function ProductMultiCombobox({
                       handleRemove(option.value)
                     }}
                   >
-                    <X className="h-3 w-3" />
+                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-3 w-3" />
                   </button>
                 </Badge>
               ))
@@ -84,7 +85,7 @@ export function ProductMultiCombobox({
               <span className="text-muted-foreground">{placeholder}</span>
             )}
           </div>
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
@@ -95,7 +96,7 @@ export function ProductMultiCombobox({
             <CommandGroup>
               {options.map((option) => (
                 <CommandItem key={option.value} value={option.value} onSelect={() => handleSelect(option.value)}>
-                  <Check className={cn("mr-2 h-4 w-4", value.includes(option.value) ? "opacity-100" : "opacity-0")} />
+                  <HugeiconsIcon icon={Tick02Icon} strokeWidth={2} className={cn("mr-2 h-4 w-4", value.includes(option.value) ? "opacity-100" : "opacity-0")} />
                   {option.label}
                 </CommandItem>
               ))}

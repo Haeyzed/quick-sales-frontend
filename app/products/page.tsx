@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { Plus, FileDown, Filter } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Add01Icon, Download01Icon, FilterIcon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { ProductDataTable } from "@/components/products/product-data-table"
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog"
@@ -14,7 +15,7 @@ import {
   mockTaxes,
   mockWarehouses,
 } from "@/lib/mock-data/products"
-import type { Product } from "@/lib/types/product"
+import type { Product } from "@/lib/types/products"
 import { Card, CardContent } from "@/components/ui/card"
 import { ProductCombobox } from "@/components/products/product-combobox"
 
@@ -56,16 +57,16 @@ export default function ProductsPage() {
         <div className="flex gap-2">
           <Button asChild>
             <Link href="/products/create">
-              <Plus className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
               Add Product
             </Link>
           </Button>
           <Button variant="secondary">
-            <FileDown className="mr-2 h-4 w-4" />
+            <HugeiconsIcon icon={Download01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
             Import Product
           </Button>
           <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
-            <Filter className="mr-2 h-4 w-4" />
+            <HugeiconsIcon icon={FilterIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
             Filter Products
           </Button>
         </div>

@@ -7,7 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Upload, X, GripVertical } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Upload01Icon, Cancel01Icon, DragDrop01Icon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 interface UploadedFile {
@@ -142,7 +143,7 @@ export default function GalleryImagePage() {
                 }}
                 onDragLeave={() => setIsDragging(false)}
               >
-                <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-sm text-muted-foreground mb-4">
                   Drop your images here, or{" "}
                   <label htmlFor="file-upload" className="text-primary cursor-pointer hover:underline">
@@ -181,10 +182,10 @@ export default function GalleryImagePage() {
                           className="h-8 w-8"
                           onClick={() => removeFile(file.id)}
                         >
-                          <X className="h-4 w-4" />
+                          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
                         </Button>
                         <div className="cursor-move">
-                          <GripVertical className="h-5 w-5 text-white" />
+                          <HugeiconsIcon icon={DragDrop01Icon} strokeWidth={2} className="h-5 w-5 text-white" />
                         </div>
                       </div>
                       <div className="p-2 bg-background">

@@ -7,7 +7,8 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductCombobox } from "@/components/products/product-combobox"
-import { Barcode, Trash2, Printer } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { BarCode01Icon, Delete01Icon, PrinterIcon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { mockProducts, mockWarehouses } from "@/lib/mock-data/products"
@@ -93,7 +94,7 @@ export default function PrintBarcodePage() {
             <Label>Add Product *</Label>
             <div className="flex gap-2 mt-2">
               <Button type="button" variant="outline" size="icon">
-                <Barcode className="h-4 w-4" />
+                <HugeiconsIcon icon={BarCode01Icon} strokeWidth={2} className="h-4 w-4" />
               </Button>
               <Input placeholder="Please type product code and select" className="flex-1" />
             </div>
@@ -148,7 +149,7 @@ export default function PrintBarcodePage() {
                         </TableCell>
                         <TableCell>
                           <Button type="button" variant="destructive" size="icon" onClick={() => removeProduct(index)}>
-                            <Trash2 className="h-4 w-4" />
+                            <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="h-4 w-4" />
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -311,7 +312,7 @@ export default function PrintBarcodePage() {
           {/* Submit Button */}
           <div className="flex gap-4 border-t pt-6">
             <Button onClick={handlePrint} size="lg" disabled={products.length === 0}>
-              <Printer className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={PrinterIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
               Preview & Print
             </Button>
           </div>
@@ -325,7 +326,7 @@ export default function PrintBarcodePage() {
             <div className="flex items-center justify-between">
               <DialogTitle>Barcode Preview</DialogTitle>
               <Button onClick={handlePrintBarcode} variant="outline" size="sm">
-                <Printer className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={PrinterIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
                 Print
               </Button>
             </div>

@@ -1,6 +1,7 @@
 "use client"
 
-import { Bell, Search, User } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Notification01Icon, Search01Icon, User02Icon } from "@hugeicons/core-free-icons"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import {
@@ -18,14 +19,14 @@ export function AppHeader() {
     <header className="flex h-16 items-center border-b px-6 gap-4">
       <div className="flex-1 flex items-center max-w-md">
         <div className="relative w-full">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input placeholder="Search products..." className="pl-10" />
         </div>
       </div>
 
       <div className="flex items-center gap-2">
         <Button variant="ghost" size="icon">
-          <Bell className="h-5 w-5" />
+          <HugeiconsIcon icon={Notification01Icon} strokeWidth={2} className="h-5 w-5" />
         </Button>
 
         <DropdownMenu>
@@ -36,7 +37,7 @@ export function AppHeader() {
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <User className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={User02Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>

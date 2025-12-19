@@ -50,15 +50,17 @@ export function DateTimePicker({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn("justify-start px-2.5 font-normal w-full", !value && "text-muted-foreground")}
-        >
-          <HugeiconsIcon icon={CalendarIcon} strokeWidth={2} data-icon="inline-start" />
-          {value ? format(value, showTime ? "PPP p" : "PPP") : <span>{placeholder}</span>}
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            className={cn("justify-start px-2.5 font-normal w-full", !value && "text-muted-foreground")}
+          >
+            <HugeiconsIcon icon={CalendarIcon} strokeWidth={2} data-icon="inline-start" />
+            {value ? format(value, showTime ? "PPP p" : "PPP") : <span>{placeholder}</span>}
+          </Button>
+        }
+      />
       <PopoverContent className="w-auto p-0" align="start">
         {showTime ? (
           <Card size="sm" className="border-0 shadow-none">
@@ -146,26 +148,28 @@ export function DateRangeTimePicker({
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          className={cn("justify-start px-2.5 font-normal w-full", !value?.from && "text-muted-foreground")}
-        >
-          <HugeiconsIcon icon={CalendarIcon} strokeWidth={2} data-icon="inline-start" />
-          {value?.from ? (
-            value.to ? (
-              <>
-                {format(value.from, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")} -{" "}
-                {format(value.to, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")}
-              </>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            className={cn("justify-start px-2.5 font-normal w-full", !value?.from && "text-muted-foreground")}
+          >
+            <HugeiconsIcon icon={CalendarIcon} strokeWidth={2} data-icon="inline-start" />
+            {value?.from ? (
+              value.to ? (
+                <>
+                  {format(value.from, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")} -{" "}
+                  {format(value.to, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")}
+                </>
+              ) : (
+                format(value.from, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")
+              )
             ) : (
-              format(value.from, showTime ? "LLL dd, y HH:mm" : "LLL dd, y")
-            )
-          ) : (
-            <span>{placeholder}</span>
-          )}
-        </Button>
-      </PopoverTrigger>
+              <span>{placeholder}</span>
+            )}
+          </Button>
+        }
+      />
       <PopoverContent className="w-auto p-0" align="start">
         {showTime ? (
           <Card size="sm" className="border-0 shadow-none">

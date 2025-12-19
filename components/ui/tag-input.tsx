@@ -1,7 +1,8 @@
 "use client"
 
 import * as React from "react"
-import { X } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Cancel01Icon } from "@hugeicons/core-free-icons"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 
@@ -61,7 +62,7 @@ export function TagInput({
             }}
             onClick={() => removeTag(tag)}
           >
-            <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />
+            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-3 w-3 text-muted-foreground hover:text-foreground" />
           </button>
         </Badge>
       ))}

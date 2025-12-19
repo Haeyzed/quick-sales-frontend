@@ -1,6 +1,9 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -13,23 +16,25 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table"
+import { HugeiconsIcon } from "@hugeicons/react"
 import {
-  ArrowUpDown,
-  Eye,
-  Pencil,
-  Trash2,
-  MoreHorizontal,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react"
+  UnfoldMoreIcon,
+  ViewIcon,
+  Edit01Icon,
+  Delete01Icon,
+  MoreHorizontalCircle01Icon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  ArrowLeft02Icon,
+  ArrowRight02Icon,
+} from "@hugeicons/core-free-icons"
 
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -37,7 +42,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { Product } from "@/lib/types/product"
+import type { Product } from "@/lib/types/products"
 
 interface ProductDataTableProps {
   data: Product[]
@@ -57,7 +62,8 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
       id: "select",
       header: ({ table }) => (
         <Checkbox
-          checked={table.getIsAllPageRowsSelected() || (table.getIsSomePageRowsSelected() && "indeterminate")}
+          checked={table.getIsAllPageRowsSelected()}
+          data-indeterminate={table.getIsSomePageRowsSelected() && !table.getIsAllPageRowsSelected()}
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
           aria-label="Select all"
         />
@@ -73,12 +79,43 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
       enableHiding: false,
     },
     {
+      accessorKey: "images",
+      header: "Image",
+      cell: ({ row }) => {
+        const product = row.original
+        const imageUrl = product.images?.[0]
+        return (
+          <div className="h-12 w-12 relative">
+            {imageUrl ? (
+              <ImageZoom
+                zoomMargin={100}
+                backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+              >
+                <Image
+                  src={imageUrl}
+                  alt={product.name}
+                  fill
+                  className="rounded object-cover"
+                  sizes="48px"
+                />
+              </ImageZoom>
+            ) : (
+              <div className="h-full w-full rounded bg-muted flex items-center justify-center text-xs text-muted-foreground">
+                No Image
+              </div>
+            )}
+          </div>
+        )
+      },
+      enableSorting: false,
+    },
+    {
       accessorKey: "name",
       header: ({ column }) => {
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
             Product
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
           </Button>
         )
       },
@@ -104,7 +141,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
             Quantity
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
           </Button>
         )
       },
@@ -126,7 +163,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
             Price
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            <HugeiconsIcon icon={UnfoldMoreIcon} strokeWidth={2} className="ml-2 h-4 w-4" />
           </Button>
         )
       },
@@ -187,27 +224,31 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
 
         return (
           <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
+            <DropdownMenuTrigger
+              render={
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <HugeiconsIcon icon={MoreHorizontalCircle01Icon} strokeWidth={2} className="h-4 w-4" />
+                </Button>
+              }
+            />
             <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => onView?.(product)}>
-                <Eye className="mr-2 h-4 w-4" />
-                View Details
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onEdit?.(product)}>
-                <Pencil className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onDelete?.(product)} className="text-destructive">
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => onView?.(product)}>
+                  <HugeiconsIcon icon={ViewIcon} strokeWidth={2} className="mr-2 h-4 w-4" />
+                  View Details
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => onEdit?.(product)}>
+                  <HugeiconsIcon icon={Edit01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => onDelete?.(product)} className="text-destructive">
+                  <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
         )
@@ -291,7 +332,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
             disabled={!table.getCanPreviousPage()}
             title="First page"
           >
-            <ChevronsLeft className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowLeft02Icon} strokeWidth={2} className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -300,7 +341,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
             disabled={!table.getCanPreviousPage()}
             title="Previous page"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} strokeWidth={2} className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-1">
             <span className="text-sm font-medium">
@@ -314,7 +355,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
             disabled={!table.getCanNextPage()}
             title="Next page"
           >
-            <ChevronRight className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowRight01Icon} strokeWidth={2} className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
@@ -323,7 +364,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
             disabled={!table.getCanNextPage()}
             title="Last page"
           >
-            <ChevronsRight className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowRight02Icon} strokeWidth={2} className="h-4 w-4" />
           </Button>
         </div>
       </div>
