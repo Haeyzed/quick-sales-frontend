@@ -1,0 +1,97 @@
+"use client"
+
+import type { ComboProduct } from "@/lib/types/product"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Trash2 } from "lucide-react"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+
+interface ComboProductTableProps {
+  products: ComboProduct[]
+  onChange: (products: ComboProduct[]) => void
+}
+
+export function ComboProductTable({ products, onChange }: ComboProductTableProps) {
+  const handleDelete = (index: number) => {
+    onChange(products.filter((_, i) => i !== index))
+  }
+
+  const handleUpdate = (index: number, field: keyof ComboProduct, value: number) => {
+    const updated = [...products]
+    updated[index] = { ...updated[index], [field]: value }
+
+    // Recalculate subtotal
+    const product = updated[index]
+    product.subtotal = product.quantity * product.unit_price * (1 + product.wastage_percent / 100)
+
+    onChange(updated)
+  }
+
+  if (products.length === 0) {
+    return <div className="border rounded-lg p-8 text-center text-muted-foreground">No combo products added yet</div>
+  }
+
+  return (
+    <div className="border rounded-lg">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Product</TableHead>
+            <TableHead>Wastage %</TableHead>
+            <TableHead>Quantity</TableHead>
+            <TableHead>Unit Cost</TableHead>
+            <TableHead>Unit Price</TableHead>
+            <TableHead>Subtotal</TableHead>
+            <TableHead className="w-[50px]"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {products.map((product, index) => (
+            <TableRow key={index}>
+              <TableCell>
+                {product.product_name} [{product.product_code}]
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  value={product.wastage_percent}
+                  onChange={(e) => handleUpdate(index, "wastage_percent", Number.parseFloat(e.target.value))}
+                  className="w-20"
+                  min="0"
+                  step="0.01"
+                />
+              </TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  value={product.quantity}
+                  onChange={(e) => handleUpdate(index, "quantity", Number.parseFloat(e.target.value))}
+                  className="w-24"
+                  min="1"
+                  step="0.01"
+                />
+              </TableCell>
+              <TableCell>{product.unit_cost.toFixed(2)}</TableCell>
+              <TableCell>
+                <Input
+                  type="number"
+                  value={product.unit_price}
+                  onChange={(e) => handleUpdate(index, "unit_price", Number.parseFloat(e.target.value))}
+                  className="w-24"
+                  min="0"
+                  step="0.01"
+                />
+              </TableCell>
+              <TableCell>{product.subtotal.toFixed(2)}</TableCell>
+              <TableCell>
+                <Button type="button" variant="destructive" size="icon" onClick={() => handleDelete(index)}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  )
+}

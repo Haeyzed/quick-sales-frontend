@@ -1,0 +1,1063 @@
+"use client"
+
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { type ProductFormValues, productSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
+import { Button } from "@/components/ui/button"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Checkbox } from "@/components/ui/checkbox"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { RefreshIcon, Add01Icon, ImageUploadIcon, Cancel01Icon } from "@hugeicons/core-free-icons"
+import { mockBrands, mockCategories, mockUnits, mockTaxes, mockWarehouses } from "@/lib/mock-data/products"
+import { ProductCombobox } from "./product-combobox"
+import { ComboProductTable } from "./combo-product-table"
+import { DateTimePicker } from "@/components/shared/date-time-picker"
+import { RelatedProductsSelector } from "./related-products-selector"
+import { TagInput } from "@/components/ui/tag-input"
+import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import type { ComboProduct } from "@/lib/types/product"
+
+interface ProductFormProps {
+  initialData?: Partial<ProductFormValues>
+  onSubmit: (data: ProductFormValues) => void
+  isEdit?: boolean
+  generalSettings?: GeneralSettingsValues
+}
+
+export function ProductForm({
+  initialData,
+  onSubmit,
+  isEdit = false,
+  generalSettings = { modules: ["ecommerce"] },
+}: ProductFormProps) {
+  const [comboProducts, setComboProducts] = useState<ComboProduct[]>(initialData?.combo_products || [])
+  const [relatedProducts, setRelatedProducts] = useState<string[]>(initialData?.related_products || [])
+  const [variantOptions, setVariantOptions] = useState<Array<{ option: string; value: string }>>([
+    { option: "", value: "" },
+  ])
+
+  const form = useForm<ProductFormValues>({
+    resolver: zodResolver(productSchema),
+    defaultValues: {
+      type: "standard",
+      barcode_symbology: "C128",
+      tax_method: "exclusive",
+      qty: 0,
+      is_variant: false,
+      is_batch: false,
+      is_imei: false,
+      featured: false,
+      is_embeded: false,
+      is_initial_stock: false,
+      is_diffPrice: false,
+      promotion: false,
+      is_active: true,
+      is_sync_disable: false,
+      is_online: true,
+      is_addon: false,
+      in_stock: true,
+      warranty_type: "months",
+      guarantee_type: "months",
+      product_tags: [],
+      ...initialData,
+    },
+  })
+
+  const productType = form.watch("type")
+  const isPromotionEnabled = form.watch("promotion")
+  const isVariant = form.watch("is_variant")
+  const isBatch = form.watch("is_batch")
+  const isInitialStock = form.watch("is_initial_stock")
+  const isDiffPrice = form.watch("is_diffPrice")
+  const isOnline = form.watch("is_online")
+
+  const generateCode = () => {
+    const code = "PRD-" + Math.random().toString(36).substring(2, 9).toUpperCase()
+    form.setValue("code", code)
+  }
+
+  const handleSubmit = (data: ProductFormValues) => {
+    if (data.type === "combo") {
+      data.combo_products = comboProducts
+    }
+    data.related_products = relatedProducts
+    onSubmit(data)
+  }
+
+  const hasModule = (module: string) => generalSettings.modules.includes(module)
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <p className="text-sm text-muted-foreground italic">
+          The field labels marked with * are required input fields.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Product Type */}
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Type *</FormLabel>
+                <ProductCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "standard", label: "Standard" },
+                    { value: "combo", label: "Combo" },
+                    { value: "digital", label: "Digital" },
+                    { value: "service", label: "Service" },
+                  ]}
+                  placeholder="Select type..."
+                  showClear={false}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Product Name */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Name *</FormLabel>
+                <FormControl>
+                  <Input placeholder="Enter product name" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="code"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Code *</FormLabel>
+                <InputGroup>
+                  <InputGroupInput placeholder="Enter product code" {...field} />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      type="button"
+                      variant="secondary"
+                      size="icon-xs"
+                      onClick={generateCode}
+                      title="Generate Code"
+                    >
+                      <HugeiconsIcon icon={RefreshIcon} strokeWidth={2} className="h-4 w-4" />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Barcode Symbology */}
+          <FormField
+            control={form.control}
+            name="barcode_symbology"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Barcode Symbology *</FormLabel>
+                <ProductCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "C128", label: "Code 128" },
+                    { value: "C39", label: "Code 39" },
+                    { value: "UPCA", label: "UPC-A" },
+                    { value: "UPCE", label: "UPC-E" },
+                    { value: "EAN8", label: "EAN-8" },
+                    { value: "EAN13", label: "EAN-13" },
+                  ]}
+                  placeholder="Select symbology..."
+                  showClear={false}
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {productType === "digital" && (
+            <FormField
+              control={form.control}
+              name="file"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Attach File *</FormLabel>
+                  <FormControl>
+                    <Input type="file" onChange={(e) => field.onChange(e.target.files?.[0]?.name)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          <FormField
+            control={form.control}
+            name="brand_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Brand</FormLabel>
+                <div className="flex gap-2">
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockBrands.map((b) => ({ value: b.id, label: b.title }))}
+                    placeholder="Select brand..."
+                    searchable
+                  />
+                  <Button type="button" variant="secondary" size="icon">
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category *</FormLabel>
+                <div className="flex gap-2">
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
+                    placeholder="Select category..."
+                    searchable
+                  />
+                  <Button type="button" variant="secondary" size="icon">
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {productType === "combo" && (
+          <div className="space-y-4">
+            <div>
+              <FormLabel>Add Product</FormLabel>
+              <div className="flex gap-2 mt-2">
+                <Input placeholder="Please type product code and select" className="flex-1" />
+              </div>
+            </div>
+
+            <div>
+              <FormLabel>Combo Products</FormLabel>
+              <ComboProductTable products={comboProducts} onChange={setComboProducts} />
+            </div>
+          </div>
+        )}
+
+        {productType !== "service" && productType !== "digital" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FormField
+              control={form.control}
+              name="unit_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Unit *</FormLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                    placeholder="Select unit..."
+                    searchable
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="sale_unit_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Sale Unit</FormLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                    placeholder="Select sale unit..."
+                    searchable
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="purchase_unit_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Purchase Unit</FormLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                    placeholder="Select purchase unit..."
+                    searchable
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {productType !== "combo" && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <FormField
+              control={form.control}
+              name="cost"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Cost *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="profit_margin"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Profit Margin (%)</FormLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    />
+                    <InputGroupAddon>
+                      <span className="text-muted-foreground">%</span>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Product Price *</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="wholesale_price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Wholesale Price</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
+        {/* Additional Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Daily Sale Objective */}
+          <FormField
+            control={form.control}
+            name="daily_sale_objective"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Daily Sale Objective</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0"
+                    {...field}
+                    onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Alert Quantity */}
+          {productType !== "service" && (
+            <FormField
+              control={form.control}
+              name="alert_quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Alert Quantity</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="0"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          {/* Product Tax */}
+          <FormField
+            control={form.control}
+            name="tax_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Tax</FormLabel>
+                <InputGroup>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "", label: "No Tax" },
+                      ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
+                    ]}
+                    placeholder="Select tax..."
+                    searchable
+                  />
+                  <InputGroupAddon>
+                    <InputGroupButton type="button" variant="secondary" size="sm">
+                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Tax Method */}
+          <FormField
+            control={form.control}
+            name="tax_method"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tax Method</FormLabel>
+                <ProductCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "exclusive", label: "Exclusive" },
+                    { value: "inclusive", label: "Inclusive" },
+                  ]}
+                  placeholder="Select method..."
+                />
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2">
+            <FormField
+              control={form.control}
+              name="warranty"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Warranty</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="warranty_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "days", label: "Days" },
+                      { value: "months", label: "Months" },
+                      { value: "years", label: "Years" },
+                    ]}
+                    placeholder="Select type..."
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <FormField
+              control={form.control}
+              name="guarantee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Guarantee</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="1"
+                      {...field}
+                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guarantee_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Type</FormLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "days", label: "Days" },
+                      { value: "months", label: "Months" },
+                      { value: "years", label: "Years" },
+                    ]}
+                    placeholder="Select type..."
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="featured"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Featured</FormLabel>
+                  <p className="text-sm text-muted-foreground italic">Featured product will be displayed in POS</p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="is_embeded"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Embedded Barcode</FormLabel>
+                  <p className="text-sm text-muted-foreground italic">
+                    Check if this product will be used in weight scale machine
+                  </p>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {!isVariant && !isBatch && (
+            <FormField
+              control={form.control}
+              name="is_initial_stock"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Initial Stock</FormLabel>
+                    <p className="text-sm text-muted-foreground italic">
+                      This feature will not work for product with variants and batches
+                    </p>
+                  </div>
+                </FormItem>
+              )}
+            />
+          )}
+
+          {isInitialStock && !isVariant && !isBatch && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Initial Stock by Warehouse</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Warehouse</TableHead>
+                      <TableHead>Quantity</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {mockWarehouses.map((warehouse) => (
+                      <TableRow key={warehouse.id}>
+                        <TableCell>{warehouse.name}</TableCell>
+                        <TableCell>
+                          <Input type="number" min="0" placeholder="0" className="w-32" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        <FormField
+          control={form.control}
+          name="images"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Image</FormLabel>
+              <p className="text-sm text-muted-foreground">
+                You can upload multiple images. Only jpeg, jpg, png, gif files can be uploaded. First image will be base
+                image.
+              </p>
+              <FormControl>
+                <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
+                  <HugeiconsIcon
+                    icon={ImageUploadIcon}
+                    strokeWidth={2}
+                    className="h-12 w-12 mx-auto mb-4 text-muted-foreground"
+                  />
+                  <Input type="file" multiple accept="image/*" className="cursor-pointer" />
+                </div>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="product_details"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Details</FormLabel>
+              <FormControl>
+                <Textarea rows={3} placeholder="Enter product details..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="is_variant"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>This product has variant</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {isVariant && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Product Variants</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {variantOptions.map((variant, index) => (
+                <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  <div className="md:col-span-4">
+                    <FormLabel>Option *</FormLabel>
+                    <Input
+                      placeholder="Size, Color etc"
+                      value={variant.option}
+                      onChange={(e) => {
+                        const newOptions = [...variantOptions]
+                        newOptions[index].option = e.target.value
+                        setVariantOptions(newOptions)
+                      }}
+                    />
+                  </div>
+                  <div className="md:col-span-7">
+                    <FormLabel>Value *</FormLabel>
+                    <TagInput
+                      value={variant.value.split(",").filter(Boolean)}
+                      onChange={(tags) => {
+                        const newOptions = [...variantOptions]
+                        newOptions[index].value = tags.join(",")
+                        setVariantOptions(newOptions)
+                      }}
+                      placeholder="Type value and press Enter"
+                    />
+                  </div>
+                  <div className="md:col-span-1 flex items-end">
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => {
+                        setVariantOptions(variantOptions.filter((_, i) => i !== index))
+                      }}
+                    >
+                      <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setVariantOptions([...variantOptions, { option: "", value: "" }])}
+              >
+                <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
+                Add More Variant
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        <FormField
+          control={form.control}
+          name="is_diffPrice"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>This product has different price for different warehouse</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        {isDiffPrice && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Warehouse Prices</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Warehouse</TableHead>
+                    <TableHead>Price</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {mockWarehouses.map((warehouse) => (
+                    <TableRow key={warehouse.id}>
+                      <TableCell>{warehouse.name}</TableCell>
+                      <TableCell>
+                        <Input type="number" step="0.01" min="0" placeholder="0.00" className="w-32" />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        )}
+
+        <FormField
+          control={form.control}
+          name="is_batch"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>This product has batch and expired date</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="is_imei"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+              <FormControl>
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel>This product has IMEI or Serial numbers</FormLabel>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="promotion"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Add Promotional Price</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {isPromotionEnabled && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-7">
+              <FormField
+                control={form.control}
+                name="promotion_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Promotional Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        {...field}
+                        onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="starting_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Promotion Starts</FormLabel>
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      showTime={true}
+                      placeholder="Select start date"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="last_date"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Promotion Ends</FormLabel>
+                    <DateTimePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                      showTime={true}
+                      placeholder="Select end date"
+                    />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          )}
+        </div>
+
+        {hasModule("woocommerce") && (
+          <FormField
+            control={form.control}
+            name="is_sync_disable"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Disable Woocommerce Sync</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
+
+        {(hasModule("ecommerce") || hasModule("restaurant")) && (
+          <FormField
+            control={form.control}
+            name="is_online"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Sell Online</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
+
+        {hasModule("ecommerce") && (
+          <FormField
+            control={form.control}
+            name="in_stock"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>In Stock</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
+
+        <FormField
+          control={form.control}
+          name="product_tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Product Tags</FormLabel>
+              <TagInput value={field.value || []} onChange={field.onChange} placeholder="Type tag and press Enter" />
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {(hasModule("ecommerce") || hasModule("restaurant")) && (
+          <Card>
+            <CardHeader>
+              <CardTitle>For SEO</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <FormField
+                control={form.control}
+                name="meta_title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Title {isOnline && "*"}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter meta title" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="meta_description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Meta Description {isOnline && "*"}</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter meta description" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        <div>
+          <RelatedProductsSelector
+            value={relatedProducts}
+            onChange={setRelatedProducts}
+            // Related products selector should stay open during selection
+          />
+        </div>
+
+        {/* Submit Button */}
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline">
+            Cancel
+          </Button>
+          <Button type="submit">{isEdit ? "Update Product" : "Create Product"}</Button>
+        </div>
+      </form>
+    </Form>
+  )
+}
