@@ -11,13 +11,7 @@ import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle }
 import { HugeiconsIcon } from "@hugeicons/react"
 import { Delete01Icon, ViewIcon } from "@hugeicons/core-free-icons"
 import { mockProducts } from "@/lib/mock-data/products"
-
-interface RelatedProduct {
-  id: string
-  name: string
-  code: string
-  image?: string
-}
+import type { Product } from "@/lib/types/products"
 
 interface RelatedProductsSelectorProps {
   value: string[]
@@ -26,7 +20,7 @@ interface RelatedProductsSelectorProps {
 
 export function RelatedProductsSelector({ value, onChange }: RelatedProductsSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<RelatedProduct[]>([])
+  const [searchResults, setSearchResults] = useState<Product[]>([])
 
   const selectedProducts = mockProducts.filter((p) => value.includes(p.id))
 
@@ -38,7 +32,6 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
           (p) =>
             p.name.toLowerCase().includes(query.toLowerCase()) || p.code.toLowerCase().includes(query.toLowerCase()),
         )
-        .filter((p) => !value.includes(p.id))
         .slice(0, 5)
       setSearchResults(results)
     } else {
@@ -46,7 +39,7 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
     }
   }
 
-  const handleAdd = (productId: string) => {
+  const handleSelect = (productId: string) => {
     onChange([...value, productId])
     // Keep the dropdown open for more selections
   }
@@ -69,35 +62,46 @@ export function RelatedProductsSelector({ value, onChange }: RelatedProductsSele
           {searchResults.length > 0 && (
             <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover p-2 shadow-md">
               <div className="space-y-1">
-                {searchResults.map((product) => (
-                  <Button
-                    key={product.id}
-                    variant="ghost"
-                    className="w-full justify-start h-auto p-2"
-                    onClick={() => handleAdd(product.id)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {product.images?.[0] && (
-                        <ImageZoom
-                          zoomMargin={100}
-                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                        >
-                          <Image
-                            src={product.images[0] || "/placeholder.svg"}
-                            alt={product.name}
-                            width={32}
-                            height={32}
-                            className="rounded object-cover"
-                          />
-                        </ImageZoom>
+                {searchResults.map((product) => {
+                  const isDisabled = value.includes(product.id)
+                  return (
+                    <Button
+                      key={product.id}
+                      type="button"
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-start h-auto p-2",
+                        isDisabled && "opacity-50 cursor-not-allowed"
                       )}
-                      <div className="text-left">
-                        <div className="font-medium text-sm">{product.name}</div>
-                        <div className="text-xs text-muted-foreground">{product.code}</div>
+                      onClick={() => !isDisabled && handleSelect(product.id)}
+                      disabled={isDisabled}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        {product.images?.[0] && (
+                          <ImageZoom
+                            zoomMargin={100}
+                            backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                          >
+                            <Image
+                              src={product.images[0] || "/placeholder.svg"}
+                              alt={product.name}
+                              width={32}
+                              height={32}
+                              className="rounded object-cover"
+                            />
+                          </ImageZoom>
+                        )}
+                        <div className="text-left flex-1">
+                          <div className="font-medium text-sm">{product.name}</div>
+                          <div className="text-xs text-muted-foreground">{product.code}</div>
+                        </div>
+                        {isDisabled && (
+                          <span className="text-xs text-muted-foreground">(Already selected)</span>
+                        )}
                       </div>
-                    </div>
-                  </Button>
-                ))}
+                    </Button>
+                  )
+                })}
               </div>
             </div>
           )}
