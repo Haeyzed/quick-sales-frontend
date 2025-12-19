@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { type ProductFormValues, productSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
@@ -33,7 +33,7 @@ export function ProductForm({
   initialData,
   onSubmit,
   isEdit = false,
-  generalSettings = { modules: ["ecommerce"] },
+  generalSettings = { modules: ["ecommerce", "woocommerce"] },
 }: ProductFormProps) {
   const [comboProducts, setComboProducts] = useState<ComboProduct[]>(initialData?.combo_products || [])
   const [relatedProducts, setRelatedProducts] = useState<string[]>(initialData?.related_products || [])
@@ -45,9 +45,21 @@ export function ProductForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       type: "standard",
+      name: "",
+      code: "",
       barcode_symbology: "C128",
       tax_method: "exclusive",
       qty: 0,
+      cost: 0,
+      price: 0,
+      profit_margin: 0,
+      wholesale_price: 0,
+      daily_sale_objective: 0,
+      alert_quantity: 0,
+      warranty: 0,
+      warranty_type: "months",
+      guarantee: 0,
+      guarantee_type: "months",
       is_variant: false,
       is_batch: false,
       is_imei: false,
@@ -61,9 +73,18 @@ export function ProductForm({
       is_online: true,
       is_addon: false,
       in_stock: true,
-      warranty_type: "months",
-      guarantee_type: "months",
       product_tags: [],
+      product_details: "",
+      brand_id: "",
+      category_id: "",
+      unit_id: "",
+      sale_unit_id: "",
+      purchase_unit_id: "",
+      tax_id: "",
+      file: "",
+      meta_title: "",
+      meta_description: "",
+      promotion_price: 0,
       ...initialData,
     },
   })
@@ -72,9 +93,31 @@ export function ProductForm({
   const isPromotionEnabled = form.watch("promotion")
   const isVariant = form.watch("is_variant")
   const isBatch = form.watch("is_batch")
+  const isImei = form.watch("is_imei")
   const isInitialStock = form.watch("is_initial_stock")
   const isDiffPrice = form.watch("is_diffPrice")
   const isOnline = form.watch("is_online")
+
+  useEffect(() => {
+    if (isBatch) {
+      form.setValue("is_variant", false)
+      form.setValue("is_initial_stock", false)
+      form.setValue("featured", false)
+    }
+  }, [isBatch, form])
+
+  useEffect(() => {
+    if (isImei) {
+      form.setValue("is_initial_stock", false)
+      form.setValue("featured", false)
+    }
+  }, [isImei, form])
+
+  useEffect(() => {
+    if (isVariant) {
+      form.setValue("is_initial_stock", false)
+    }
+  }, [isVariant, form])
 
   const generateCode = () => {
     const code = "PRD-" + Math.random().toString(36).substring(2, 9).toUpperCase()
@@ -340,7 +383,8 @@ export function ProductForm({
                       step="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -360,7 +404,8 @@ export function ProductForm({
                       step="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                     />
                     <InputGroupAddon>
                       <span className="text-muted-foreground">%</span>
@@ -383,7 +428,8 @@ export function ProductForm({
                       step="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -403,7 +449,8 @@ export function ProductForm({
                       step="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -428,7 +475,8 @@ export function ProductForm({
                     step="0.01"
                     placeholder="0"
                     {...field}
-                    onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -450,7 +498,8 @@ export function ProductForm({
                       step="0.01"
                       placeholder="0"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -459,14 +508,14 @@ export function ProductForm({
             />
           )}
 
-          {/* Product Tax */}
+          {/* Product Tax - standalone field without input group */}
           <FormField
             control={form.control}
             name="tax_id"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Product Tax</FormLabel>
-                <InputGroup>
+                <div className="flex gap-2">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
@@ -477,12 +526,10 @@ export function ProductForm({
                     placeholder="Select tax..."
                     searchable
                   />
-                  <InputGroupAddon>
-                    <InputGroupButton type="button" variant="secondary" size="sm">
-                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
+                  <Button type="button" variant="secondary" size="icon">
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
                 <FormMessage />
               </FormItem>
             )}
@@ -524,7 +571,8 @@ export function ProductForm({
                       min="1"
                       placeholder="1"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -567,7 +615,8 @@ export function ProductForm({
                       min="1"
                       placeholder="1"
                       {...field}
-                      onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -605,7 +654,7 @@ export function ProductForm({
             render={({ field }) => (
               <FormItem className="flex flex-row items-start space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isBatch || isImei} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>Featured</FormLabel>
@@ -633,7 +682,7 @@ export function ProductForm({
             )}
           />
 
-          {!isVariant && !isBatch && (
+          {!isVariant && !isBatch && !isImei && (
             <FormField
               control={form.control}
               name="is_initial_stock"
@@ -653,7 +702,7 @@ export function ProductForm({
             />
           )}
 
-          {isInitialStock && !isVariant && !isBatch && (
+          {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Initial Stock by Warehouse</CardTitle>
@@ -721,20 +770,22 @@ export function ProductForm({
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="is_variant"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>This product has variant</FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
+        {!isBatch && (
+          <FormField
+            control={form.control}
+            name="is_variant"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>This product has variant</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
 
         {isVariant && (
           <Card>
@@ -790,26 +841,73 @@ export function ProductForm({
                 <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
                 Add More Variant
               </Button>
+
+              {variantOptions.some((v) => v.option && v.value) && (
+                <div className="mt-4">
+                  <h4 className="text-sm font-medium mb-2">Generated Variants</h4>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Item Code</TableHead>
+                        <TableHead>Additional Cost</TableHead>
+                        <TableHead>Additional Price</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {variantOptions
+                        .filter((v) => v.option && v.value)
+                        .flatMap((v) =>
+                          v.value
+                            .split(",")
+                            .filter(Boolean)
+                            .map((val) => ({
+                              option: v.option,
+                              value: val.trim(),
+                            })),
+                        )
+                        .map((variant, idx) => (
+                          <TableRow key={idx}>
+                            <TableCell>
+                              {variant.option}: {variant.value}
+                            </TableCell>
+                            <TableCell>
+                              <Input placeholder="Item code" className="w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
+                            </TableCell>
+                            <TableCell>
+                              <Input type="number" step="0.01" placeholder="0.00" className="w-32" />
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
 
-        <FormField
-          control={form.control}
-          name="is_diffPrice"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>This product has different price for different warehouse</FormLabel>
-              </div>
-            </FormItem>
-          )}
-        />
+        {mockWarehouses.length > 0 && (
+          <FormField
+            control={form.control}
+            name="is_diffPrice"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>This product has different price for different warehouse</FormLabel>
+                </div>
+              </FormItem>
+            )}
+          />
+        )}
 
-        {isDiffPrice && (
+        {isDiffPrice && mockWarehouses.length > 0 && (
           <Card>
             <CardHeader>
               <CardTitle>Warehouse Prices</CardTitle>
@@ -897,7 +995,8 @@ export function ProductForm({
                         step="0.01"
                         placeholder="0.00"
                         {...field}
-                        onChange={(e) => field.onChange(Number.parseFloat(e.target.value))}
+                        value={field.value || ""}
+                        onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -1006,40 +1105,40 @@ export function ProductForm({
         />
 
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
-          <Card>
-            <CardHeader>
-              <CardTitle>For SEO</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FormField
-                control={form.control}
-                name="meta_title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meta Title {isOnline && "*"}</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter meta title" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium">For SEO</h3>
+              <p className="text-sm text-muted-foreground">Optimize your product for search engines</p>
+            </div>
 
-              <FormField
-                control={form.control}
-                name="meta_description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Meta Description {isOnline && "*"}</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter meta description" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-          </Card>
+            <FormField
+              control={form.control}
+              name="meta_title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meta Title {isOnline && "*"}</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter meta title" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="meta_description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Meta Description {isOnline && "*"}</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter meta description" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         )}
 
         <div>

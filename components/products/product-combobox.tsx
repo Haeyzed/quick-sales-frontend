@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react"
 import {
   Combobox,
   ComboboxContent,
@@ -35,13 +36,25 @@ export function ProductCombobox({
   showClear = true,
   keepOpenOnSelect = false,
 }: ProductComboboxProps) {
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredOptions = searchable
+    ? options.filter((option) => option.label.toLowerCase().includes(searchQuery.toLowerCase()))
+    : options
+
   return (
-    <Combobox items={options} value={value} onValueChange={onChange} keepOpenOnSelect={keepOpenOnSelect}>
+    <Combobox
+      items={filteredOptions}
+      value={value}
+      onValueChange={onChange}
+      keepOpenOnSelect={keepOpenOnSelect}
+      onInputValueChange={searchable ? setSearchQuery : undefined}
+    >
       <ComboboxInput placeholder={placeholder} showClear={showClear} className={className} />
       <ComboboxContent>
         <ComboboxEmpty>No option found.</ComboboxEmpty>
         <ComboboxList>
-          {options.map((item) => (
+          {filteredOptions.map((item) => (
             <ComboboxItem key={item.value} value={item.value}>
               {item.label}
             </ComboboxItem>
