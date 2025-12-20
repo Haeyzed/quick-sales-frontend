@@ -84,7 +84,7 @@ export default function ProductHistoryListPage() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
               <Label>Product</Label>
-              <ProductCombobox
+              <ProductCombobox 
                 value={selectedProduct}
                 onChange={setSelectedProduct}
                 options={[
@@ -107,7 +107,7 @@ export default function ProductHistoryListPage() {
 
             <div>
               <Label>Warehouse</Label>
-              <ProductCombobox
+              <ProductCombobox 
                 value={warehouseId}
                 onChange={setWarehouseId}
                 options={[

@@ -84,7 +84,6 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
           The field labels marked with * are required input fields.
         </p>
 
-        <div className="grid grid-cols-2 gap-4">
           <FormField
             control={form.control}
             name="name"
@@ -187,7 +186,6 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
               )}
             />
           )}
-        </div>
 
         {(hasRestaurant || hasEcommerce) && (
           <>

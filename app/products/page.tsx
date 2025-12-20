@@ -55,7 +55,7 @@ export default function ProductsPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Products</h1>
         <div className="flex gap-2">
-          <Button asChild>
+          <Button>
             <Link href="/products/create">
               <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
               Add Product
@@ -86,7 +86,6 @@ export default function ProductsPage() {
                     ...mockWarehouses.map((w) => ({ value: w.id, label: w.name })),
                   ]}
                   placeholder="Select warehouse..."
-                  searchable
                 />
               </div>
 
@@ -103,7 +102,6 @@ export default function ProductsPage() {
                     { value: "service", label: "Service" },
                   ]}
                   placeholder="Select type..."
-                  searchable
                 />
               </div>
 
@@ -114,10 +112,9 @@ export default function ProductsPage() {
                   onChange={(value) => setFilters({ ...filters, brand: value })}
                   options={[
                     { value: "0", label: "All Brands" },
-                    ...mockBrands.map((b) => ({ value: b.id, label: b.title })),
+                    ...mockBrands.map((b) => ({ value: b.id, label: b.name })),
                   ]}
                   placeholder="Select brand..."
-                  searchable
                 />
               </div>
 
@@ -131,7 +128,6 @@ export default function ProductsPage() {
                     ...mockCategories.map((c) => ({ value: c.id, label: c.name })),
                   ]}
                   placeholder="Select category..."
-                  searchable
                 />
               </div>
 
@@ -142,10 +138,9 @@ export default function ProductsPage() {
                   onChange={(value) => setFilters({ ...filters, unit: value })}
                   options={[
                     { value: "0", label: "All Unit" },
-                    ...mockUnits.map((u) => ({ value: u.id, label: u.unit_name })),
+                    ...mockUnits.map((u) => ({ value: u.id, label: u.name })),
                   ]}
                   placeholder="Select unit..."
-                  searchable
                 />
               </div>
 
@@ -158,8 +153,7 @@ export default function ProductsPage() {
                     { value: "0", label: "All Tax" },
                     ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
                   ]}
-                  placeholder="Select tax..."
-                  searchable
+                  placeholder="Select tax..." 
                 />
               </div>
 

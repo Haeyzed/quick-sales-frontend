@@ -82,7 +82,7 @@ export function BrandDataTable({ data, onEdit, onDelete }: BrandDataTableProps) 
         return brand.image ? (
           <Image
             src={brand.image || "/placeholder.svg"}
-            alt={brand.title}
+            alt={brand.name}
             width={50}
             height={50}
             className="rounded-md object-cover"
@@ -95,7 +95,7 @@ export function BrandDataTable({ data, onEdit, onDelete }: BrandDataTableProps) 
       },
     },
     {
-      accessorKey: "title",
+      accessorKey: "name",
       header: ({ column }) => {
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}>
@@ -104,7 +104,7 @@ export function BrandDataTable({ data, onEdit, onDelete }: BrandDataTableProps) 
           </Button>
         )
       },
-      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
+      cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
     },
     {
       id: "actions",
@@ -166,8 +166,8 @@ export function BrandDataTable({ data, onEdit, onDelete }: BrandDataTableProps) 
       <div className="flex items-center gap-4">
         <Input
           placeholder="Filter brands..."
-          value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) => table.getColumn("name")?.setFilterValue(event.target.value)}
           className="max-w-sm"
         />
       </div>

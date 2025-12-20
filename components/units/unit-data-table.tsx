@@ -64,21 +64,23 @@ export function UnitDataTable({ units, onEdit, onDelete }: UnitDataTableProps) {
             ) : (
               units.map((unit) => (
                 <TableRow key={unit.id}>
-                  <TableCell className="font-medium">{unit.unit_name}</TableCell>
-                  <TableCell>{unit.unit_code}</TableCell>
+                  <TableCell className="font-medium">{unit.name}</TableCell>
+                  <TableCell>{unit.code}</TableCell>
                   <TableCell>
-                    {unit.base_unit ? units.find((u) => u.id === unit.base_unit)?.unit_name || "-" : "-"}
+                    {unit.base_unit ? units.find((u) => u.id === unit.base_unit)?.name || "-" : "-"}
                   </TableCell>
                   <TableCell>{unit.operator || "-"}</TableCell>
                   <TableCell>{unit.operation_value || "-"}</TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} className="h-4 w-4" />
-                          <span className="sr-only">Open menu</span>
-                        </Button>
-                      </DropdownMenuTrigger>
+                      <DropdownMenuTrigger
+                        render={
+                          <Button variant="ghost" size="icon">
+                            <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} className="h-4 w-4" />
+                            <span className="sr-only">Open menu</span>
+                          </Button>
+                        }
+                      />
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(unit)}>
                           <HugeiconsIcon icon={PencilEdit01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />

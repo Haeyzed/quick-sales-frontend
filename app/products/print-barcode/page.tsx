@@ -7,20 +7,28 @@ import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductCombobox } from "@/components/products/product-combobox"
+import { ComboProductSelector } from "@/components/products/combo-product-selector"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { BarCode01Icon, Delete01Icon, PrinterIcon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, PrinterIcon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { mockProducts } from "@/lib/mock-data/products"
 import { mockWarehouses } from "@/lib/mock-data/warehouses"
+import type { Product } from "@/lib/types/product"
+import type { Brand } from "@/lib/types/brand"
+import Image from "next/image"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+import { cn } from "@/lib/utils"
 
 interface BarcodeProduct {
   id: string
   name: string
   code: string
-  quantity: number
+  images?: string[]
+  qty: number
   warehouse_id?: string
   price?: number
+  brand?: Brand
 }
 
 export default function PrintBarcodePage() {
@@ -40,30 +48,33 @@ export default function PrintBarcodePage() {
   })
   const [barcodeSettings, setBarcodeSettings] = useState("default")
 
-  const addProduct = (productCode: string) => {
-    const product = mockProducts.find((p) => p.code === productCode)
-    if (!product) return
-
-    const exists = products.find((p) => p.code === product.code)
-    if (exists) {
-      alert("Duplicate input is not allowed!")
-      return
-    }
+  const handleAddProduct = (product: Product) => {
+    const fullProduct = mockProducts.find((p) => p.id === product.id)
+    if (!fullProduct) return
 
     setProducts([
       ...products,
       {
-        id: product.id,
-        name: product.name,
-        code: product.code,
-        quantity: 1,
+        id: fullProduct.id,
+        name: fullProduct.name,
+        code: fullProduct.code,
+        images: fullProduct.images,
+        qty: 1,
+        price: fullProduct.price,
+        brand: fullProduct.brand,
       },
     ])
   }
 
   const updateQuantity = (index: number, quantity: number) => {
     const updated = [...products]
-    updated[index].quantity = quantity
+    updated[index].qty = quantity
+    setProducts(updated)
+  }
+
+  const updateWarehouse = (index: number, warehouseId: string) => {
+    const updated = [...products]
+    updated[index].warehouse_id = warehouseId
     setProducts(updated)
   }
 
@@ -90,15 +101,9 @@ export default function PrintBarcodePage() {
             The field labels marked with * are required input fields.
           </p>
 
-          {/* Add Product Section */}
           <div>
             <Label>Add Product *</Label>
-            <div className="flex gap-2 mt-2">
-              <Button type="button" variant="outline" size="icon">
-                <HugeiconsIcon icon={BarCode01Icon} strokeWidth={2} className="h-4 w-4" />
-              </Button>
-              <Input placeholder="Please type product code and select" className="flex-1" />
-            </div>
+            <ComboProductSelector onAddProduct={handleAddProduct} existingProductIds={products.map((p) => p.id)} />
           </div>
 
           {/* Products Table */}
@@ -107,8 +112,7 @@ export default function PrintBarcodePage() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Code</TableHead>
+                    <TableHead>Product</TableHead>
                     <TableHead>Quantity</TableHead>
                     <TableHead>Warehouse/Price</TableHead>
                     <TableHead className="w-[50px]"></TableHead>
@@ -124,12 +128,35 @@ export default function PrintBarcodePage() {
                   ) : (
                     products.map((product, index) => (
                       <TableRow key={index}>
-                        <TableCell>{product.name}</TableCell>
-                        <TableCell className="font-mono text-sm">{product.code}</TableCell>
+                        
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {product.images && product.images.length > 0 && (
+                              <ImageZoom
+                                zoomMargin={100}
+                                backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                              >
+                                <Image
+                                  src={product.images[0]}
+                                  alt={product.name}
+                                  width={40}
+                                  height={40}
+                                  className="rounded object-cover"
+                                />
+                              </ImageZoom>
+                            )}
+                            <div>
+                              <div className="font-medium">{product.name}</div>
+                              <div className="text-sm text-muted-foreground">[{product.code}]</div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        {/* <TableCell>{product.name}</TableCell>
+                        <TableCell className="font-mono text-sm">{product.code}</TableCell> */}
                         <TableCell>
                           <Input
                             type="number"
-                            value={product.quantity}
+                            value={product.qty}
                             onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value))}
                             className="w-24"
                             min="1"
@@ -138,14 +165,9 @@ export default function PrintBarcodePage() {
                         <TableCell>
                           <ProductCombobox
                             value={product.warehouse_id || ""}
-                            onChange={(value) => {
-                              const updated = [...products]
-                              updated[index].warehouse_id = value
-                              setProducts(updated)
-                            }}
+                            onChange={(value: string) => updateWarehouse(index, value)}
                             options={mockWarehouses.map((w) => ({ value: w.id, label: w.name }))}
                             placeholder="Choose Warehouse"
-                            searchable
                           />
                         </TableCell>
                         <TableCell>
@@ -334,11 +356,28 @@ export default function PrintBarcodePage() {
           </DialogHeader>
           <div className="grid grid-cols-3 gap-4 max-h-[500px] overflow-y-auto p-4">
             {products.flatMap((product) =>
-              Array.from({ length: product.quantity }, (_, i) => (
+              Array.from({ length: product.qty }, (_, i) => (
                 <div
                   key={`${product.id}-${i}`}
                   className="border rounded p-4 text-center flex flex-col items-center justify-center gap-2"
                 >
+                  {product.images && product.images.length > 0 && (
+                    <div className="relative w-20 h-20 mb-2">
+                      <ImageZoom
+                        zoomMargin={100}
+                        backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                      >
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="rounded object-cover"
+                          sizes="80px"
+                          unoptimized
+                        />
+                      </ImageZoom>
+                    </div>
+                  )}
                   {printSettings.name && (
                     <div className="font-medium text-sm" style={{ fontSize: `${printSettings.name_size}px` }}>
                       {product.name}
@@ -348,8 +387,27 @@ export default function PrintBarcodePage() {
                     BARCODE
                   </div>
                   <div className="font-mono text-xs">{product.code}</div>
-                  {printSettings.price && <div className="text-sm font-semibold">$780.00</div>}
-                  {printSettings.brand_name && <div className="text-xs text-muted-foreground">Samsung</div>}
+                  {printSettings.price && product.price && (
+                    <div className="text-sm font-semibold" style={{ fontSize: `${printSettings.price_size}px` }}>
+                      ${product.price.toFixed(2)}
+                    </div>
+                  )}
+                  {printSettings.brand_name && product.brand?.name && (
+                    <div
+                      className="text-xs text-muted-foreground"
+                      style={{ fontSize: `${printSettings.brand_name_size}px` }}
+                    >
+                      {product.brand?.name}
+                    </div>
+                  )}
+                  {printSettings.business_name && (
+                    <div
+                      className="text-xs text-muted-foreground"
+                      style={{ fontSize: `${printSettings.business_name_size}px` }}
+                    >
+                      My Business
+                    </div>
+                  )}
                 </div>
               )),
             )}

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Upload01Icon, Cancel01Icon, DragDrop01Icon } from "@hugeicons/core-free-icons"
+import { Upload01Icon, Cancel01Icon, DragDropIcon } from "@hugeicons/core-free-icons"
 import { toast } from "sonner"
 
 interface UploadedFile {
@@ -185,7 +185,7 @@ export default function GalleryImagePage() {
                           <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
                         </Button>
                         <div className="cursor-move">
-                          <HugeiconsIcon icon={DragDrop01Icon} strokeWidth={2} className="h-5 w-5 text-white" />
+                          <HugeiconsIcon icon={DragDropIcon} strokeWidth={2} className="h-5 w-5 text-white" />
                         </div>
                       </div>
                       <div className="p-2 bg-background">

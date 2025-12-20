@@ -1,7 +1,7 @@
 export interface Unit {
     id: string
-    unit_code: string
-    unit_name: string
+    name: string
+    code: string
     base_unit?: string | null
     operator?: "*" | "/" | null
     operation_value?: number | null

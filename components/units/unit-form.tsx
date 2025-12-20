@@ -25,11 +25,11 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
     defaultValues: {
-      unit_code: unit?.unit_code || "",
-      unit_name: unit?.unit_name || "",
+      code: unit?.code || "",
+      name: unit?.name || "",
       base_unit: unit?.base_unit || "",
-      operator: unit?.operator || "",
-      operation_value: unit?.operation_value || "",
+      operator: unit?.operator || null,
+      operation_value: unit?.operation_value || null,
     },
   })
 
@@ -53,7 +53,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
 
         <FormField
           control={form.control}
-          name="unit_code"
+          name="code"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Code *</FormLabel>
@@ -67,7 +67,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
 
         <FormField
           control={form.control}
-          name="unit_name"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Name *</FormLabel>
@@ -86,11 +86,11 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
             <FormItem>
               <FormLabel>Base Unit</FormLabel>
               <ProductCombobox
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
                 options={[
                   { value: "", label: "No Base Unit" },
-                  ...baseUnits.map((u) => ({ value: u.id, label: u.unit_name })),
+                  ...baseUnits.map((u) => ({ value: u.id, label: u.name })),
                 ]}
                 placeholder="Select base unit..."
                 showClear
@@ -107,7 +107,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
             <FormItem>
               <FormLabel>Operator</FormLabel>
               <ProductCombobox
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
                 options={[
                   { value: "", label: "Select an operator" },
@@ -129,7 +129,14 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
             <FormItem>
               <FormLabel>Operation Value</FormLabel>
               <FormControl>
-                <Input {...field} type="number" step="any" placeholder="Enter operation value" />
+                <Input 
+                  {...field} 
+                  type="number" 
+                  step="any" 
+                  placeholder="Enter operation value"
+                  value={field.value ?? ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : null)}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

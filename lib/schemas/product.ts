@@ -111,6 +111,22 @@ export const productSchema = z
     promotion_price: z.number().optional().default(0),
     related_products: z.array(z.string()).optional().default([]),
     is_active: z.boolean().default(true),
+    brand: z.object({
+      id: z.string(),
+      name: z.string(),
+    }).optional(),
+    category: z.object({
+      id: z.string(),
+      name: z.string(),
+    }).optional(),
+    unit: z.object({
+      id: z.string(),
+      name: z.string(),
+    }).optional(),
+    tax: z.object({
+      id: z.string(),
+      name: z.string(),
+    }).optional(),
   })
   .refine(
     (data) => {

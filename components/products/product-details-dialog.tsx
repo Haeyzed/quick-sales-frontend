@@ -91,15 +91,15 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
               </div>
               <div>
                 <span className="font-medium">Brand:</span>
-                <p>{product.brand_name || "-"}</p>
+                <p>{product.brand?.name || "-"}</p>
               </div>
               <div>
                 <span className="font-medium">Category:</span>
-                <p>{product.category_name}</p>
+                <p>{product.category?.name || "-"}</p>
               </div>
               <div>
                 <span className="font-medium">Unit:</span>
-                <p>{product.unit_name}</p>
+                <p>{product.unit?.name || "-"}</p>
               </div>
               <div>
                 <span className="font-medium">Quantity:</span>
@@ -131,10 +131,10 @@ export function ProductDetailsDialog({ product, open, onOpenChange }: ProductDet
                   <p className="font-semibold text-destructive">${product.promotion_price.toFixed(2)}</p>
                 </div>
               )}
-              {product.tax_name && (
+              {product.tax && (
                 <div>
                   <span className="font-medium">Tax:</span>
-                  <p>{product.tax_name}</p>
+                  <p>{product.tax.name}</p>
                 </div>
               )}
               <div>

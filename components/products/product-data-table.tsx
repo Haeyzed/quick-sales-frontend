@@ -97,6 +97,7 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
                   fill
                   className="rounded object-cover"
                   sizes="48px"
+                  unoptimized
                 />
               </ImageZoom>
             ) : (
@@ -127,13 +128,14 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
       cell: ({ row }) => <div className="font-mono text-sm">{row.getValue("code")}</div>,
     },
     {
-      accessorKey: "brand_name",
+      id: "brand",
       header: "Brand",
-      cell: ({ row }) => <div>{row.getValue("brand_name") || "-"}</div>,
+      cell: ({ row }) => <div>{row.original.brand?.name || "-"}</div>,
     },
     {
-      accessorKey: "category_name",
+      id: "category",
       header: "Category",
+      cell: ({ row }) => <div>{row.original.category?.name || "-"}</div>,
     },
     {
       accessorKey: "qty",
@@ -154,8 +156,9 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
       },
     },
     {
-      accessorKey: "unit_name",
+      id: "unit",
       header: "Unit",
+      cell: ({ row }) => <div>{row.original.unit?.name || "-"}</div>,
     },
     {
       accessorKey: "price",

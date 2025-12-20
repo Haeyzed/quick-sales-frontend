@@ -1,3 +1,8 @@
+import { Brand } from "./brand"
+import { Category } from "./category"
+import { Unit } from "./unit"
+import { Tax } from "./tax"
+
 export type ProductType = "standard" | "combo" | "digital" | "service"
 
 export type BarcodeSymbology = "C128" | "C39" | "UPCA" | "UPCE" | "EAN8" | "EAN13"
@@ -5,35 +10,6 @@ export type BarcodeSymbology = "C128" | "C39" | "UPCA" | "UPCE" | "EAN8" | "EAN1
 export type TaxMethod = "exclusive" | "inclusive"
 
 export type WarrantyType = "days" | "months" | "years"
-
-export interface Brand {
-  id: string
-  title: string
-}
-
-export interface Category {
-  id: string
-  name: string
-}
-
-export interface Unit {
-  id: string
-  unit_name: string
-  base_unit: string | null
-  operation_value?: number
-  operator?: string
-}
-
-export interface Tax {
-  id: string
-  name: string
-  rate: number
-}
-
-export interface Warehouse {
-  id: string
-  name: string
-}
 
 export interface ProductVariant {
   id: string
@@ -74,11 +50,8 @@ export interface Product {
   barcode_symbology: BarcodeSymbology
   file?: string
   brand_id?: string
-  brand_name?: string
   category_id: string
-  category_name: string
   unit_id: string
-  unit_name: string
   sale_unit_id?: string
   purchase_unit_id?: string
   cost: number
@@ -88,7 +61,6 @@ export interface Product {
   daily_sale_objective?: number
   alert_quantity?: number
   tax_id?: string
-  tax_name?: string
   tax_method: TaxMethod
   warranty?: number
   warranty_type?: WarrantyType
@@ -138,12 +110,16 @@ export interface Product {
   is_active: boolean
   created_at: string
   updated_at: string
+  brand?: Brand
+  category?: Category
+  unit?: Unit
+  tax?: Tax
 }
 
 export interface ProductFormData
   extends Omit<
     Product,
-    "id" | "created_at" | "updated_at" | "brand_name" | "category_name" | "unit_name" | "tax_name"
+    "id" | "created_at" | "updated_at" | "brand" | "category" | "unit" | "tax"
   > {
   id?: string
 }

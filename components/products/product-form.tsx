@@ -407,7 +407,7 @@ export function ProductForm({
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
-                    options={mockBrands.map((b) => ({ value: b.id, label: b.title }))}
+                    options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
                     placeholder="Select brand..."
                   />
                   <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)}>
@@ -491,7 +491,7 @@ export function ProductForm({
                     <ProductCombobox
                       value={field.value}
                       onChange={field.onChange}
-                      options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                      options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                       placeholder="Select unit..."
                     />
                     <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)}>
@@ -512,7 +512,7 @@ export function ProductForm({
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
-                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                    options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                     placeholder="Select sale unit..."
                   />
                   <FormMessage />
@@ -529,7 +529,7 @@ export function ProductForm({
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
-                    options={mockUnits.map((u) => ({ value: u.id, label: u.unit_name }))}
+                    options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                     placeholder="Select purchase unit..."
                   />
                   <FormMessage />
@@ -959,6 +959,7 @@ export function ProductForm({
                             fill
                             className="object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                            unoptimized
                           />
                         </ImageZoom>
                       </div>

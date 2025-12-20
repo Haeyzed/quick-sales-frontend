@@ -41,7 +41,7 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
   const form = useForm<BrandFormValues>({
     resolver: zodResolver(brandSchema),
     defaultValues: {
-      title: brand?.title || "",
+      name: brand?.name || "",
       image: brand?.image || "",
       page_title: brand?.page_title || "",
       short_description: brand?.short_description || "",
@@ -70,7 +70,7 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
 
         <FormField
           control={form.control}
-          name="title"
+          name="name"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Brand Name *</FormLabel>
