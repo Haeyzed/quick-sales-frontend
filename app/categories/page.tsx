@@ -2,10 +2,21 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Add01Icon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { CategoryForm } from "@/components/categories/category-form"
 import { CategoryDataTable } from "@/components/categories/category-data-table"
 import { mockCategories } from "@/lib/mock-data/categories"
@@ -16,6 +27,7 @@ export default function CategoriesPage() {
   const [categories, setCategories] = React.useState(mockCategories)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false)
   const [editingCategory, setEditingCategory] = React.useState<Category | undefined>()
+  const [categoryToDelete, setCategoryToDelete] = React.useState<Category | undefined>()
 
   const handleCreate = async (data: CategoryFormValues) => {
     const newCategory: Category = {
@@ -32,8 +44,10 @@ export default function CategoriesPage() {
     setEditingCategory(undefined)
   }
 
-  const handleDelete = async (id: string) => {
-    setCategories(categories.filter((c) => c.id !== id))
+  const handleDelete = () => {
+    if (!categoryToDelete) return
+    setCategories(categories.filter((c) => c.id !== categoryToDelete.id))
+    setCategoryToDelete(undefined)
   }
 
   const generalSettings = { modules: ["ecommerce", "woocommerce", "restaurant"] }
@@ -51,7 +65,11 @@ export default function CategoriesPage() {
         </Button>
       </div>
 
-      <CategoryDataTable categories={categories} onEdit={setEditingCategory} onDelete={handleDelete} />
+      <CategoryDataTable
+        categories={categories}
+        onEdit={setEditingCategory}
+        onDelete={(category) => setCategoryToDelete(category)}
+      />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -85,6 +103,26 @@ export default function CategoriesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!categoryToDelete} onOpenChange={() => setCategoryToDelete(undefined)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete category?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this category. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="ghost">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

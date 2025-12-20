@@ -3,13 +3,24 @@
 import { useState } from "react"
 import Link from "next/link"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Add01Icon, Download01Icon, FilterIcon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Download01Icon, FilterIcon, Delete02Icon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ProductDataTable } from "@/components/products/product-data-table"
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog"
 import {
   mockProducts,
- } from "@/lib/mock-data/products"
+} from "@/lib/mock-data/products"
 import { mockBrands } from "@/lib/mock-data/brands"
 import { mockCategories } from "@/lib/mock-data/categories"
 import { mockUnits } from "@/lib/mock-data/units"
@@ -20,10 +31,11 @@ import { Card, CardContent } from "@/components/ui/card"
 import { ProductCombobox } from "@/components/products/product-combobox"
 
 export default function ProductsPage() {
-  const [products] = useState<Product[]>(mockProducts)
+  const [products, setProducts] = useState<Product[]>(mockProducts)
   const [showFilters, setShowFilters] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [showDetailsDialog, setShowDetailsDialog] = useState(false)
+  const [productToDelete, setProductToDelete] = useState<Product | undefined>()
   const [filters, setFilters] = useState({
     warehouse: "0",
     type: "all",
@@ -44,10 +56,10 @@ export default function ProductsPage() {
     console.log("Edit product:", product)
   }
 
-  const handleDelete = (product: Product) => {
-    if (confirm(`Are you sure you want to delete ${product.name}?`)) {
-      console.log("Delete product:", product)
-    }
+  const handleDelete = () => {
+    if (!productToDelete) return
+    setProducts(products.filter((p) => p.id !== productToDelete.id))
+    setProductToDelete(undefined)
   }
 
   return (
@@ -189,9 +201,34 @@ export default function ProductsPage() {
         </Card>
       )}
 
-      <ProductDataTable data={products} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+      <ProductDataTable
+        data={products}
+        onView={handleView}
+        onEdit={handleEdit}
+        onDelete={(product) => setProductToDelete(product)}
+      />
 
       <ProductDetailsDialog product={selectedProduct} open={showDetailsDialog} onOpenChange={setShowDetailsDialog} />
+
+      <AlertDialog open={!!productToDelete} onOpenChange={() => setProductToDelete(undefined)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete product?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this product. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="ghost">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -47,47 +47,50 @@ export function ProductMultiCombobox({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn("w-full justify-between min-h-10 h-auto", className)}
-        >
-          <div className="flex flex-wrap gap-1 flex-1">
-            {selectedOptions.length > 0 ? (
-              selectedOptions.map((option) => (
-                <Badge key={option.value} variant="secondary" className="mr-1">
-                  {option.label}
-                  <button
-                    type="button"
-                    className="ml-1 rounded-full outline-none hover:bg-muted"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+      <PopoverTrigger
+        render={(props) => (
+          <Button
+            {...props}
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn("w-full justify-between min-h-10 h-auto", className)}
+          >
+            <div className="flex flex-wrap gap-1 flex-1">
+              {selectedOptions.length > 0 ? (
+                selectedOptions.map((option) => (
+                  <Badge key={option.value} variant="secondary" className="mr-1">
+                    {option.label}
+                    <button
+                      type="button"
+                      className="ml-1 rounded-full outline-none hover:bg-muted"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handleRemove(option.value)
+                        }
+                      }}
+                      onMouseDown={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
                         handleRemove(option.value)
-                      }
-                    }}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                    }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleRemove(option.value)
-                    }}
-                  >
-                    <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
-            )}
-          </div>
-          <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
+                      }}
+                    >
+                      <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))
+              ) : (
+                <span className="text-muted-foreground">{placeholder}</span>
+              )}
+            </div>
+            <HugeiconsIcon icon={ArrowDown01Icon} strokeWidth={2} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        )}
+      />
       <PopoverContent className="w-full p-0" align="start">
         <Command>
           <CommandInput placeholder="Search..." />

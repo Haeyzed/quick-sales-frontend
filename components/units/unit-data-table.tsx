@@ -7,38 +7,15 @@ import { PencilEdit01Icon, Delete01Icon, MoreHorizontalIcon } from "@hugeicons/c
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import type { Unit } from "@/lib/types/unit"
 
 interface UnitDataTableProps {
   units: Unit[]
   onEdit: (unit: Unit) => void
-  onDelete: (id: string) => Promise<void>
+  onDelete: (unit: Unit) => void
 }
 
 export function UnitDataTable({ units, onEdit, onDelete }: UnitDataTableProps) {
-  const [deleteId, setDeleteId] = React.useState<string | null>(null)
-  const [isDeleting, setIsDeleting] = React.useState(false)
-
-  const handleDelete = async () => {
-    if (!deleteId) return
-    setIsDeleting(true)
-    try {
-      await onDelete(deleteId)
-      setDeleteId(null)
-    } finally {
-      setIsDeleting(false)
-    }
-  }
 
   return (
     <>
@@ -74,12 +51,12 @@ export function UnitDataTable({ units, onEdit, onDelete }: UnitDataTableProps) {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger
-                        render={
-                          <Button variant="ghost" size="icon">
+                        render={(props) => (
+                          <Button variant="ghost" size="icon" {...props}>
                             <HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={2} className="h-4 w-4" />
                             <span className="sr-only">Open menu</span>
                           </Button>
-                        }
+                        )}
                       />
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => onEdit(unit)}>
@@ -88,7 +65,7 @@ export function UnitDataTable({ units, onEdit, onDelete }: UnitDataTableProps) {
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
-                          onClick={() => setDeleteId(unit.id)}
+                          onClick={() => onDelete(unit)}
                         >
                           <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="mr-2 h-4 w-4" />
                           Delete
@@ -102,27 +79,6 @@ export function UnitDataTable({ units, onEdit, onDelete }: UnitDataTableProps) {
           </TableBody>
         </Table>
       </div>
-
-      <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the unit.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {isDeleting ? "Deleting..." : "Delete"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </>
   )
 }

@@ -2,10 +2,21 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Add01Icon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { TaxForm } from "@/components/taxes/tax-form"
 import { TaxDataTable } from "@/components/taxes/tax-data-table"
 import { mockTaxes } from "@/lib/mock-data/taxes"
@@ -16,6 +27,7 @@ export default function TaxesPage() {
   const [taxes, setTaxes] = React.useState(mockTaxes)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false)
   const [editingTax, setEditingTax] = React.useState<Tax | undefined>()
+  const [taxToDelete, setTaxToDelete] = React.useState<Tax | undefined>()
 
   const handleCreate = async (data: TaxFormValues) => {
     const newTax: Tax = {
@@ -32,8 +44,10 @@ export default function TaxesPage() {
     setEditingTax(undefined)
   }
 
-  const handleDelete = async (id: string) => {
-    setTaxes(taxes.filter((t) => t.id !== id))
+  const handleDelete = () => {
+    if (!taxToDelete) return
+    setTaxes(taxes.filter((t) => t.id !== taxToDelete.id))
+    setTaxToDelete(undefined)
   }
 
   return (
@@ -49,7 +63,7 @@ export default function TaxesPage() {
         </Button>
       </div>
 
-      <TaxDataTable taxes={taxes} onEdit={setEditingTax} onDelete={handleDelete} />
+      <TaxDataTable taxes={taxes} onEdit={setEditingTax} onDelete={(tax) => setTaxToDelete(tax)} />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -76,6 +90,26 @@ export default function TaxesPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!taxToDelete} onOpenChange={() => setTaxToDelete(undefined)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete tax?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this tax. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="ghost">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

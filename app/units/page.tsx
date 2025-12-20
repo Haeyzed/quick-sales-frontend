@@ -2,10 +2,21 @@
 
 import * as React from "react"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Add01Icon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Delete02Icon } from "@hugeicons/core-free-icons"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { UnitForm } from "@/components/units/unit-form"
 import { UnitDataTable } from "@/components/units/unit-data-table"
 import { mockUnits } from "@/lib/mock-data/units"
@@ -16,6 +27,7 @@ export default function UnitsPage() {
   const [units, setUnits] = React.useState(mockUnits)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false)
   const [editingUnit, setEditingUnit] = React.useState<Unit | undefined>()
+  const [unitToDelete, setUnitToDelete] = React.useState<Unit | undefined>()
 
   const handleCreate = async (data: UnitFormValues) => {
     const newUnit: Unit = {
@@ -32,8 +44,10 @@ export default function UnitsPage() {
     setEditingUnit(undefined)
   }
 
-  const handleDelete = async (id: string) => {
-    setUnits(units.filter((u) => u.id !== id))
+  const handleDelete = () => {
+    if (!unitToDelete) return
+    setUnits(units.filter((u) => u.id !== unitToDelete.id))
+    setUnitToDelete(undefined)
   }
 
   return (
@@ -49,7 +63,7 @@ export default function UnitsPage() {
         </Button>
       </div>
 
-      <UnitDataTable units={units} onEdit={setEditingUnit} onDelete={handleDelete} />
+      <UnitDataTable units={units} onEdit={setEditingUnit} onDelete={(unit) => setUnitToDelete(unit)} />
 
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -76,6 +90,26 @@ export default function UnitsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!unitToDelete} onOpenChange={() => setUnitToDelete(undefined)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <HugeiconsIcon icon={Delete02Icon} strokeWidth={2} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Delete unit?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete this unit. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="ghost">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDelete}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -6,8 +6,8 @@ export const categorySchema = z.object({
   parent_id: z.string().optional(),
   image: z.string().optional(),
   icon: z.string().optional(),
-  featured: z.boolean().default(false),
-  is_sync_disable: z.boolean().default(false),
+  featured: z.boolean(),
+  is_sync_disable: z.boolean(),
   page_title: z.string().optional(),
   short_description: z.string().optional(),
 })

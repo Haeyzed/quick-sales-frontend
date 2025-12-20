@@ -74,12 +74,14 @@ export default function BrandsPage() {
           <p className="text-muted-foreground">Manage your product brands</p>
         </div>
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
-              Add Brand
-            </Button>
-          </DialogTrigger>
+          <DialogTrigger
+            render={(props) => (
+              <Button {...props}>
+                <HugeiconsIcon icon={Add01Icon} strokeWidth={2} />
+                Add Brand
+              </Button>
+            )}
+          />
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Add Brand</DialogTitle>

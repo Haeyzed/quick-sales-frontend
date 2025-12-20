@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { type ProductFormValues, productSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
+import { type ProductFormValues, productFormSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import {
@@ -94,7 +94,7 @@ export function ProductForm({
   const [isTaxDialogOpen, setIsTaxDialogOpen] = React.useState(false)
 
   const form = useForm<ProductFormValues>({
-    resolver: zodResolver(productSchema),
+    resolver: zodResolver(productFormSchema),
     defaultValues: {
       type: "standard",
       name: "",
