@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { type ProductFormValues, productFormSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   FileUpload,
   FileUploadDropzone,
@@ -19,7 +20,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { RefreshIcon, Add01Icon, Cancel01Icon, Upload01Icon } from "@hugeicons/core-free-icons"
+import { RefreshIcon, Add01Icon, Cancel01Icon, Upload01Icon, InformationCircleIcon } from "@hugeicons/core-free-icons"
 import { ProductCombobox } from "./product-combobox"
 import { ComboProductTable } from "./combo-product-table"
 import { ComboProductSelector } from "./combo-product-selector"
@@ -35,7 +36,7 @@ import Image from "next/image"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
 import React from "react"
-import { Spinner } from "@/components/ui/spinner" // Assuming Spinner component exists
+import { Spinner } from "@/components/ui/spinner"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { BrandForm } from "@/components/brands/brand-form"
 import { CategoryForm } from "@/components/categories/category-form"
@@ -540,7 +541,7 @@ export function ProductForm({
         )}
 
         {productType !== "combo" && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <FormField
               control={form.control}
               name="cost"
@@ -638,7 +639,22 @@ export function ProductForm({
             name="daily_sale_objective"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Daily Sale Objective</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  Daily Sale Objective
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger type="button">
+                        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p>
+                          Minimum qty which must be sold in a day. If not, you will be notified on dashboard. But you
+                          have to set up the cron job properly for that. Follow the documentation in that regard.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -710,7 +726,23 @@ export function ProductForm({
             name="tax_method"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Tax Method</FormLabel>
+                <FormLabel className="flex items-center gap-1">
+                  Tax Method
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger type="button">
+                        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-xs">
+                        <p className="space-y-1">
+                          <strong>Exclusive:</strong> Product price = Actual product price + Tax.
+                          <br />
+                          <strong>Inclusive:</strong> Actual product price = Product price - Tax.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </FormLabel>
                 <ProductCombobox
                   value={field.value}
                   onChange={field.onChange}

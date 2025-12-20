@@ -161,7 +161,7 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
                   value={field.value}
                   onChange={field.onChange}
                   options={[
-                    { value: "", label: "No parent" },
+                    // { value: "", label: "No parent" },
                     ...parentCategories.map((c) => ({ value: c.id, label: c.name })),
                   ]}
                   placeholder="Select parent category..."

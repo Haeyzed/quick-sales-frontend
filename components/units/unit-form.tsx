@@ -89,7 +89,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 options={[
-                  { value: "", label: "No Base Unit" },
+                  // { value: "", label: "No Base Unit" },
                   ...baseUnits.map((u) => ({ value: u.id, label: u.name })),
                 ]}
                 placeholder="Select base unit..."
@@ -110,7 +110,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 options={[
-                  { value: "", label: "Select an operator" },
+                  // { value: "", label: "Select an operator" },
                   { value: "*", label: "*" },
                   { value: "/", label: "/" },
                 ]}
