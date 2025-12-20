@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { type ProductFormValues, productFormSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   FileUpload,
   FileUploadDropzone,
@@ -641,7 +641,6 @@ export function ProductForm({
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   Daily Sale Objective
-                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger type="button">
                         <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
@@ -653,7 +652,6 @@ export function ProductForm({
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -728,7 +726,6 @@ export function ProductForm({
               <FormItem>
                 <FormLabel className="flex items-center gap-1">
                   Tax Method
-                  <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger type="button">
                         <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
@@ -741,7 +738,6 @@ export function ProductForm({
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                  </TooltipProvider>
                 </FormLabel>
                 <ProductCombobox
                   value={field.value}
@@ -988,7 +984,8 @@ export function ProductForm({
                           <Image
                             src={imageUrl || "/placeholder.svg"}
                             alt={`Existing image ${index + 1}`}
-                            fill
+                            width={400}
+                            height={400}
                             className="object-cover"
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                             unoptimized

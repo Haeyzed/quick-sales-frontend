@@ -142,6 +142,8 @@ export default function PrintBarcodePage() {
                                   width={40}
                                   height={40}
                                   className="rounded object-cover"
+                                  sizes="48px"
+                                  unoptimized
                                 />
                               </ImageZoom>
                             )}
@@ -370,9 +372,10 @@ export default function PrintBarcodePage() {
                         <Image
                           src={product.images[0]}
                           alt={product.name}
-                          fill
+                          width={40}
+                          height={40}
                           className="rounded object-cover"
-                          sizes="80px"
+                          sizes="48px"
                           unoptimized
                         />
                       </ImageZoom>

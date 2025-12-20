@@ -94,7 +94,8 @@ export function ProductDataTable({ data, onView, onEdit, onDelete }: ProductData
                 <Image
                   src={imageUrl}
                   alt={product.name}
-                  fill
+                  width={200}
+                  height={200}
                   className="rounded object-cover"
                   sizes="48px"
                   unoptimized
