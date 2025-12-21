@@ -1,12 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useForm } from "react-hook-form"
+import { useState, useEffect, type ReactNode } from "react"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { type ProductFormValues, productFormSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
 import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { Field, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
 import {
   FileUpload,
   FileUploadDropzone,
@@ -119,7 +119,7 @@ export function ProductForm({
       featured: false,
       is_embeded: false,
       is_initial_stock: false,
-      is_diffPrice: false,
+      is_diff_price: false,
       promotion: false,
       is_active: true,
       is_sync_disable: false,
@@ -148,7 +148,7 @@ export function ProductForm({
   const isBatch = form.watch("is_batch")
   const isImei = form.watch("is_imei")
   const isInitialStock = form.watch("is_initial_stock")
-  const isDiffPrice = form.watch("is_diffPrice")
+  const isDiffPrice = form.watch("is_diff_price")
   const isOnline = form.watch("is_online")
 
   const handleCreateBrand = async (data: BrandFormValues) => {
@@ -194,7 +194,7 @@ export function ProductForm({
   useEffect(() => {
     if (productType === "combo") {
       form.setValue("is_variant", false)
-      form.setValue("is_diffPrice", false)
+      form.setValue("is_diff_price", false)
     }
   }, [productType, form])
 
@@ -244,7 +244,7 @@ export function ProductForm({
   const hasModule = (module: string) => generalSettings.modules.includes(module)
 
   return (
-    <Form {...form}>
+    <>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <p className="text-sm text-muted-foreground italic">
           The field labels marked with * are required input fields.
@@ -252,12 +252,12 @@ export function ProductForm({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Product Type */}
-          <FormField
+          <Controller
             control={form.control}
             name="type"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Type *</FormLabel>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="type">Product Type *</FieldLabel>
                 <ProductCombobox
                   value={field.value}
                   onChange={field.onChange}
@@ -270,34 +270,32 @@ export function ProductForm({
                   placeholder="Select type..."
                   showClear={false}
                 />
-                <FormMessage />
-              </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
           {/* Product Name */}
-          <FormField
+          <Controller
             control={form.control}
             name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Name *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Enter product name" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="name">Product Name *</FieldLabel>
+                <Input id="name" placeholder="Enter product name" {...field} />
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
-          <FormField
+          <Controller
             control={form.control}
             name="code"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Code *</FormLabel>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="code">Product Code *</FieldLabel>
                 <InputGroup>
-                  <InputGroupInput placeholder="Enter product code" {...field} />
+                  <InputGroupInput id="code" placeholder="Enter product code" {...field} />
                   <InputGroupAddon align="inline-end">
                     <InputGroupButton
                       type="button"
@@ -310,18 +308,18 @@ export function ProductForm({
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
-                <FormMessage />
-              </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
           {/* Barcode Symbology */}
-          <FormField
+          <Controller
             control={form.control}
             name="barcode_symbology"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Barcode Symbology *</FormLabel>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="barcode_symbology">Barcode Symbology *</FieldLabel>
                 <ProductCombobox
                   value={field.value}
                   onChange={field.onChange}
@@ -336,74 +334,72 @@ export function ProductForm({
                   placeholder="Select symbology..."
                   showClear={false}
                 />
-                <FormMessage />
-              </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
           {productType === "digital" && (
-            <FormField
+            <Controller
               control={form.control}
               name="file"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Attach File *</FormLabel>
-                  <FormControl>
-                    <FileUpload
-                      value={fileUpload}
-                      onValueChange={(files) => {
-                        setFileUpload(files)
-                        field.onChange(files[0]?.name || "")
-                      }}
-                      accept="*/*"
-                      maxFiles={1}
-                      maxSize={50 * 1024 * 1024}
-                      onFileReject={(_, message) => {
-                        form.setError("file", {
-                          message,
-                        })
-                      }}
-                    >
-                      <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
-                        <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
-                        Drag and drop or
-                        <FileUploadTrigger asChild>
-                          <Button variant="link" size="sm" className="p-0">
-                            choose file
-                          </Button>
-                        </FileUploadTrigger>
-                        to upload
-                      </FileUploadDropzone>
-                      <FileUploadList>
-                        {fileUpload.map((file, index) => (
-                          <FileUploadItem key={index} value={file}>
-                            <FileUploadItemPreview />
-                            <FileUploadItemMetadata />
-                            <FileUploadItemDelete asChild>
-                              <Button variant="ghost" size="icon" className="size-7">
-                                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
-                                <span className="sr-only">Delete</span>
-                              </Button>
-                            </FileUploadItemDelete>
-                          </FileUploadItem>
-                        ))}
-                      </FileUploadList>
-                    </FileUpload>
-                  </FormControl>
-                  <FormDescription>Upload a file up to 50MB.</FormDescription>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="file">Attach File *</FieldLabel>
+                  <FileUpload
+                    value={fileUpload}
+                    onValueChange={(files) => {
+                      setFileUpload(files)
+                      field.onChange(files[0]?.name || "")
+                    }}
+                    accept="*/*"
+                    maxFiles={1}
+                    maxSize={50 * 1024 * 1024}
+                    onFileReject={(_, message) => {
+                      form.setError("file", {
+                        message,
+                      })
+                    }}
+                  >
+                    <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
+                      <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
+                      Drag and drop or
+                      <FileUploadTrigger asChild>
+                        <Button variant="link" size="sm" className="p-0">
+                          choose file
+                        </Button>
+                      </FileUploadTrigger>
+                      to upload
+                    </FileUploadDropzone>
+                    <FileUploadList>
+                      {fileUpload.map((file, index) => (
+                        <FileUploadItem key={index} value={file}>
+                          <FileUploadItemPreview />
+                          <FileUploadItemMetadata />
+                          <FileUploadItemDelete asChild>
+                            <Button variant="ghost" size="icon" className="size-7">
+                              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                              <span className="sr-only">Delete</span>
+                            </Button>
+                          </FileUploadItemDelete>
+                        </FileUploadItem>
+                      ))}
+                    </FileUploadList>
+                  </FileUpload>
+                  <FieldDescription>Upload a file up to 50MB.</FieldDescription>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
           )}
 
           {/* Brand */}
-          <FormField
+          <Controller
             control={form.control}
             name="brand_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Brand</FormLabel>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
                 <div className="flex gap-2">
                   <ProductCombobox
                     value={field.value}
@@ -415,18 +411,18 @@ export function ProductForm({
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
-                <FormMessage />
-              </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
 
           {/* Category */}
-          <FormField
+          <Controller
             control={form.control}
             name="category_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Category *</FormLabel>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="category_id">Category *</FieldLabel>
                 <div className="flex gap-2">
                   <ProductCombobox
                     value={field.value}
@@ -438,8 +434,8 @@ export function ProductForm({
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
-                <FormMessage />
-              </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
             )}
           />
         </div>
@@ -447,7 +443,7 @@ export function ProductForm({
         {productType === "combo" && (
           <div className="space-y-4">
             <div>
-              <FormLabel>Add Product</FormLabel>
+              <FieldLabel>Add Product</FieldLabel>
               <ComboProductSelector
                 onAddProduct={(product) => {
                   const existingIndex = comboProducts.findIndex((p) => p.product_id === product.id)
@@ -473,7 +469,7 @@ export function ProductForm({
             </div>
 
             <div>
-              <FormLabel>Combo Products</FormLabel>
+              <FieldLabel>Combo Products</FieldLabel>
               <ComboProductTable products={comboProducts} onChange={setComboProducts} />
             </div>
           </div>
@@ -482,12 +478,12 @@ export function ProductForm({
         {productType !== "service" && productType !== "digital" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Product Unit */}
-            <FormField
+            <Controller
               control={form.control}
               name="unit_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Unit *</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="unit_id">Product Unit *</FieldLabel>
                   <div className="flex gap-2">
                     <ProductCombobox
                       value={field.value}
@@ -499,42 +495,42 @@ export function ProductForm({
                       <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                     </Button>
                   </div>
-                  <FormMessage />
-                </FormItem>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="sale_unit_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Sale Unit</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="sale_unit_id">Sale Unit</FieldLabel>
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                     placeholder="Select sale unit..."
                   />
-                  <FormMessage />
-                </FormItem>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="purchase_unit_id"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Purchase Unit</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="purchase_unit_id">Purchase Unit</FieldLabel>
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                     placeholder="Select purchase unit..."
                   />
-                  <FormMessage />
-                </FormItem>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
           </div>
@@ -542,35 +538,35 @@ export function ProductForm({
 
         {productType !== "combo" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <FormField
+            <Controller
               control={form.control}
               name="cost"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Cost *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="cost">Product Cost *</FieldLabel>
+                  <Input
+                    id="cost"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                  />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="profit_margin"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Profit Margin (%)</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="profit_margin">Profit Margin (%)</FieldLabel>
                   <InputGroup>
                     <InputGroupInput
+                      id="profit_margin"
                       type="number"
                       step="0.01"
                       placeholder="0.00"
@@ -582,65 +578,58 @@ export function ProductForm({
                       <span className="text-muted-foreground">%</span>
                     </InputGroupAddon>
                   </InputGroup>
-                  <FormMessage />
-                </FormItem>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Price *</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="price">Product Price *</FieldLabel>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                  />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="wholesale_price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Wholesale Price</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="wholesale_price">Wholesale Price</FieldLabel>
+                  <Input
+                    id="wholesale_price"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                  />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
-          </div>
-        )}
 
-        {/* Additional Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Daily Sale Objective */}
-          <FormField
-            control={form.control}
-            name="daily_sale_objective"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-1">
-                  Daily Sale Objective
+            <Controller
+              control={form.control}
+              name="daily_sale_objective"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel className="flex items-center gap-1">
+                    Daily Sale Objective
                     <Tooltip>
                       <TooltipTrigger type="button">
                         <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
@@ -652,80 +641,52 @@ export function ProductForm({
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                </FormLabel>
-                <FormControl>
+                  </FieldLabel>
                   <Input
+                    id="daily_sale_objective"
                     type="number"
                     step="0.01"
-                    placeholder="0"
+                    placeholder="0.00"
                     {...field}
                     value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                   />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {/* Alert Quantity */}
-          {productType !== "service" && (
-            <FormField
-              control={form.control}
-              name="alert_quantity"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Alert Quantity</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      placeholder="0"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
-          )}
 
-          {/* Product Tax - standalone field without input group */}
-          <FormField
-            control={form.control}
-            name="tax_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Product Tax</FormLabel>
-                <div className="flex gap-2">
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={[
-                      { value: "", label: "No Tax" },
-                      ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
-                    ]}
-                    placeholder="Select tax..."
-                  />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
-                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                  </Button>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <Controller
+              control={form.control}
+              name="tax_id"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="tax_id">Product Tax</FieldLabel>
+                  <div className="flex gap-2">
+                    <ProductCombobox
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={[
+                        ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
+                      ]}
+                      placeholder="Select tax..."
+                    />
+                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
+                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
+              )}
+            />
 
-          {/* Tax Method */}
-          <FormField
-            control={form.control}
-            name="tax_method"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center gap-1">
-                  Tax Method
+            <Controller
+              control={form.control}
+              name="tax_method"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel className="flex items-center gap-1">
+                    Tax Method
                     <Tooltip>
                       <TooltipTrigger type="button">
                         <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
@@ -738,196 +699,52 @@ export function ProductForm({
                         </p>
                       </TooltipContent>
                     </Tooltip>
-                </FormLabel>
-                <ProductCombobox
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={[
-                    { value: "exclusive", label: "Exclusive" },
-                    { value: "inclusive", label: "Inclusive" },
-                  ]}
-                  placeholder="Select method..."
-                />
-                <FormMessage />
-              </FormItem>
+                  </FieldLabel>
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[
+                      { value: "exclusive", label: "Exclusive" },
+                      { value: "inclusive", label: "Inclusive" },
+                    ]}
+                    placeholder="Select method..."
+                  />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
+              )}
+            />
+
+            {productType !== "service"  && (
+              <Controller
+                control={form.control}
+                name="alert_quantity"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="alert_quantity">Alert Quantity</FieldLabel>
+                    <Input
+                      id="alert_quantity"
+                      type="number"
+                      step="0.01"
+                      placeholder="0"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                    />
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
+                )}
+              />
             )}
-          />
-        </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="grid grid-cols-2 gap-2">
-            <FormField
-              control={form.control}
-              name="warranty"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Warranty</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="1"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="warranty_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={[
-                      { value: "days", label: "Days" },
-                      { value: "months", label: "Months" },
-                      { value: "years", label: "Years" },
-                    ]}
-                    placeholder="Select type..."
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <FormField
-              control={form.control}
-              name="guarantee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Guarantee</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      min="1"
-                      placeholder="1"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="guarantee_type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={[
-                      { value: "days", label: "Days" },
-                      { value: "months", label: "Months" },
-                      { value: "years", label: "Years" },
-                    ]}
-                    placeholder="Select type..."
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <FormField
+          <Controller
             control={form.control}
-            name="featured"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isBatch || isImei} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Featured</FormLabel>
-                  <p className="text-sm text-muted-foreground italic">Featured product will be displayed in POS</p>
-                </div>
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="is_embeded"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Embedded Barcode</FormLabel>
-                  <p className="text-sm text-muted-foreground italic">
-                    Check if this product will be used in weight scale machine
-                  </p>
-                </div>
-              </FormItem>
-            )}
-          />
-
-          {!isVariant && !isBatch && !isImei && (
-            <FormField
-              control={form.control}
-              name="is_initial_stock"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                  <FormControl>
-                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>Initial Stock</FormLabel>
-                    <p className="text-sm text-muted-foreground italic">
-                      This feature will not work for product with variants and batches
-                    </p>
-                  </div>
-                </FormItem>
-              )}
-            />
-          )}
-
-          {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead>Quantity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockWarehouses.map((warehouse) => (
-                  <TableRow key={warehouse.id}>
-                    <TableCell>{warehouse.name}</TableCell>
-                    <TableCell>
-                      <Input type="number" min="0" placeholder="0" className="w-32" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </div>
-
-        <FormField
-          control={form.control}
-          name="images"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Image</FormLabel>
-              <FormControl>
+            name="images"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="images">Product Image</FieldLabel>
                 <FileUpload
                   value={imagesUpload}
                   onValueChange={(files) => {
@@ -969,49 +786,47 @@ export function ProductForm({
                     ))}
                   </FileUploadList>
                 </FileUpload>
-              </FormControl>
-              {/* Existing Images Display */}
-              {initialData?.images && initialData.images.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Existing Images</p>
-                  <div className="grid grid-cols-4 gap-4">
-                    {initialData.images.map((imageUrl, index) => (
-                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-                        <ImageZoom
-                          zoomMargin={100}
-                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                        >
-                          <Image
-                            src={imageUrl || "/placeholder.svg"}
-                            alt={`Existing image ${index + 1}`}
-                            width={400}
-                            height={400}
-                            className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                            unoptimized
-                          />
-                        </ImageZoom>
-                      </div>
-                    ))}
+                {/* Existing Images Display */}
+                {initialData?.images && initialData.images.length > 0 && (
+                  <div className="mt-4">
+                    <p className="text-sm font-medium mb-2">Existing Images</p>
+                    <div className="grid grid-cols-4 gap-4">
+                      {initialData.images.map((imageUrl, index) => (
+                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                          <ImageZoom
+                            zoomMargin={100}
+                            backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                          >
+                            <Image
+                              src={imageUrl || "/placeholder.svg"}
+                              alt={`Existing image ${index + 1}`}
+                              width={400}
+                              height={400}
+                              className="object-cover"
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                              unoptimized
+                            />
+                          </ImageZoom>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              )}
-              <FormDescription>
-                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will
-                be base image.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+                )}
+                <FieldDescription>
+                  Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image
+                  will be base image.
+                </FieldDescription>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
 
-        <FormField
-          control={form.control}
-          name="product_details"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Details</FormLabel>
-              <FormControl>
+          <Controller
+            control={form.control}
+            name="product_details"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="product_details">Product Details</FieldLabel>
                 <Editor
                   editorSerializedState={productDetailsEditorState || undefined}
                   onSerializedChange={(value) => {
@@ -1020,25 +835,219 @@ export function ProductForm({
                     field.onChange(JSON.stringify(value))
                   }}
                 />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Controller
+            control={form.control}
+            name="warranty"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="warranty">Warranty</FieldLabel>
+                <div className="flex gap-2">
+                  <Input
+                    id="warranty"
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
+                    className="flex-1"
+                  />
+                  <Controller
+                    control={form.control}
+                    name="warranty_type"
+                    render={({ field: typeField }) => (
+                      <ProductCombobox
+                        value={typeField.value}
+                        onChange={typeField.onChange}
+                        options={[
+                          { value: "days", label: "Days" },
+                          { value: "months", label: "Months" },
+                          { value: "years", label: "Years" },
+                        ]}
+                        placeholder="Select type..."
+                        showClear={false}
+                        className="w-32"
+                      />
+                    )}
+                  />
+                </div>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="guarantee"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="guarantee">Guarantee</FieldLabel>
+                <div className="flex gap-2">
+                  <Input
+                    id="guarantee"
+                    type="number"
+                    min="1"
+                    placeholder="1"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
+                    className="flex-1"
+                  />
+                  <Controller
+                    control={form.control}
+                    name="guarantee_type"
+                    render={({ field: typeField }) => (
+                      <ProductCombobox
+                        value={typeField.value}
+                        onChange={typeField.onChange}
+                        options={[
+                          { value: "days", label: "Days" },
+                          { value: "months", label: "Months" },
+                          { value: "years", label: "Years" },
+                        ]}
+                        placeholder="Select type..."
+                        showClear={false}
+                        className="w-32"
+                      />
+                    )}
+                  />
+                </div>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          <Controller
+            control={form.control}
+            name="featured"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isBatch || isImei} />
+                <div className="space-y-1 leading-none">
+                  <FieldLabel className="font-normal">Featured</FieldLabel>
+                  <FieldDescription>Featured product will be displayed in POS</FieldDescription>
+                </div>
+              </Field>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="is_embeded"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <div className="space-y-1 leading-none">
+                  <FieldLabel className="font-normal">Embedded Barcode</FieldLabel>
+                  <FieldDescription>Check if this product will be used in weight scale machine</FieldDescription>
+                </div>
+              </Field>
+            )}
+          />
+
+          {!isVariant && !isBatch && !isImei && (
+            <Controller
+              control={form.control}
+              name="is_initial_stock"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <div className="space-y-1 leading-none">
+                    <FieldLabel className="font-normal">Initial Stock</FieldLabel>
+                    <FieldDescription>
+                      This feature will not work for product with variants and batches
+                    </FieldDescription>
+                  </div>
+                </Field>
+              )}
+            />
           )}
-        />
+
+          {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Warehouse</TableHead>
+                  <TableHead>Quantity</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {mockWarehouses.map((warehouse) => (
+                  <TableRow key={warehouse.id}>
+                    <TableCell>{warehouse.name}</TableCell>
+                    <TableCell>
+                      <Input type="number" min="0" placeholder="0" className="w-32" />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          <Controller
+            control={form.control}
+            name="is_active"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">Product Active</FieldLabel>
+              </Field>
+            )}
+          />
+
+          {hasModule("restaurant") && (
+            <Controller
+              control={form.control}
+              name="is_addon"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <div className="space-y-1">
+                    <FieldLabel className="font-normal">Addon Item</FieldLabel>
+                    <FieldDescription>
+                      Addon Items will be displayed only at the Addon section{" "}
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className="inline-flex">
+                            <HugeiconsIcon
+                              icon={InformationCircleIcon}
+                              strokeWidth={2}
+                              className="h-4 w-4 text-muted-foreground"
+                            />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mark this if the product is an add-on item for other products</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </FieldDescription>
+                  </div>
+                </Field>
+              )}
+            />
+          )}
+        </div>
 
         {!isBatch && productType !== "combo" && (
-          <FormField
+          <Controller
             control={form.control}
             name="is_variant"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 <div className="space-y-1 leading-none">
-                  <FormLabel>This product has variant</FormLabel>
+                  <FieldLabel className="font-normal">This product has variant</FieldLabel>
                 </div>
-              </FormItem>
+              </Field>
             )}
           />
         )}
@@ -1048,7 +1057,7 @@ export function ProductForm({
             {variantOptions.map((variant, index) => (
               <div key={index} className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 <div className="md:col-span-4">
-                  <FormLabel>Option *</FormLabel>
+                  <FieldLabel>Option *</FieldLabel>
                   <Input
                     placeholder="Size, Color etc"
                     value={variant.option}
@@ -1060,7 +1069,7 @@ export function ProductForm({
                   />
                 </div>
                 <div className="md:col-span-7">
-                  <FormLabel>Value *</FormLabel>
+                  <FieldLabel>Value *</FieldLabel>
                   <TagInput
                     value={variant.value.split(",").filter(Boolean)}
                     onChange={(tags) => {
@@ -1142,18 +1151,18 @@ export function ProductForm({
         )}
 
         {mockWarehouses.length > 0 && productType !== "combo" && (
-          <FormField
+          <Controller
             control={form.control}
-            name="is_diffPrice"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
+            name="is_diff_price"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 <div className="space-y-1 leading-none">
-                  <FormLabel>This product has different price for different warehouse</FormLabel>
+                  <FieldLabel className="font-normal">
+                    This product has different price for different warehouse
+                  </FieldLabel>
                 </div>
-              </FormItem>
+              </Field>
             )}
           />
         )}
@@ -1179,106 +1188,93 @@ export function ProductForm({
           </Table>
         )}
 
-        <FormField
+        <Controller
           control={form.control}
           name="is_batch"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>This product has batch and expired date</FormLabel>
-              </div>
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error} orientation="horizontal">
+              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              <FieldLabel className="font-normal">This product has batch and expired date</FieldLabel>
+            </Field>
           )}
         />
 
-        <FormField
+        <Controller
           control={form.control}
           name="is_imei"
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>This product has IMEI or Serial numbers</FormLabel>
-              </div>
-            </FormItem>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error} orientation="horizontal">
+              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+              <FieldLabel className="font-normal">This product has IMEI or Serial numbers</FieldLabel>
+            </Field>
           )}
         />
 
         <div className="space-y-4">
-          <FormField
+          <Controller
             control={form.control}
             name="promotion"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Add Promotional Price</FormLabel>
-                </div>
-              </FormItem>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">Add Promotional Price</FieldLabel>
+              </Field>
             )}
           />
 
           {isPromotionEnabled && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pl-7">
-              <FormField
+              <Controller
                 control={form.control}
                 name="promotion_price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Promotional Price</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        {...field}
-                        value={field.value || ""}
-                        onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="promotion_price">Promotional Price</FieldLabel>
+                    <Input
+                      id="promotion_price"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...field}
+                      value={field.value || ""}
+                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                    />
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="starting_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Promotion Starts</FormLabel>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="starting_date">Promotion Starts</FieldLabel>
                     <DateTimePicker
                       value={field.value}
                       onChange={field.onChange}
                       showTime={true}
                       placeholder="Select start date"
                     />
-                    <FormMessage />
-                  </FormItem>
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
                 )}
               />
 
-              <FormField
+              <Controller
                 control={form.control}
                 name="last_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Promotion Ends</FormLabel>
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="last_date">Promotion Ends</FieldLabel>
                     <DateTimePicker
                       value={field.value}
                       onChange={field.onChange}
                       showTime={true}
                       placeholder="Select end date"
                     />
-                    <FormMessage />
-                  </FormItem>
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
                 )}
               />
             </div>
@@ -1286,65 +1282,53 @@ export function ProductForm({
         </div>
 
         {hasModule("woocommerce") && (
-          <FormField
+          <Controller
             control={form.control}
             name="is_sync_disable"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Disable Woocommerce Sync</FormLabel>
-                </div>
-              </FormItem>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">Disable Woocommerce Sync</FieldLabel>
+              </Field>
             )}
           />
         )}
 
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
-          <FormField
+          <Controller
             control={form.control}
             name="is_online"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Sell Online</FormLabel>
-                </div>
-              </FormItem>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">Sell Online</FieldLabel>
+              </Field>
             )}
           />
         )}
 
         {hasModule("ecommerce") && (
-          <FormField
+          <Controller
             control={form.control}
             name="in_stock"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
-                <FormControl>
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>In Stock</FormLabel>
-                </div>
-              </FormItem>
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">In Stock</FieldLabel>
+              </Field>
             )}
           />
         )}
 
-        <FormField
+        <Controller
           control={form.control}
           name="product_tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Product Tags</FormLabel>
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel htmlFor="product_tags">Product Tags</FieldLabel>
               <TagInput value={field.value || []} onChange={field.onChange} placeholder="Type tag and press Enter" />
-              <FormMessage />
-            </FormItem>
+              <FieldError>{fieldState.error?.message}</FieldError>
+            </Field>
           )}
         />
 
@@ -1355,31 +1339,27 @@ export function ProductForm({
               <p className="text-sm text-muted-foreground">Optimize your product for search engines</p>
             </div>
 
-            <FormField
+            <Controller
               control={form.control}
               name="meta_title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Title {isOnline && "*"}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter meta title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="meta_title">Meta Title {isOnline && "*"}</FieldLabel>
+                  <Input id="meta_title" placeholder="Enter meta title" {...field} />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="meta_description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Meta Description {isOnline && "*"}</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter meta description" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="meta_description">Meta Description {isOnline && "*"}</FieldLabel>
+                  <Input id="meta_description" placeholder="Enter meta description" {...field} />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
               )}
             />
           </div>
@@ -1400,7 +1380,7 @@ export function ProductForm({
           </Button>
           <Button type="submit" disabled={form.formState.isSubmitting}>
             {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
-            {isEdit ? "Update Product" : "Create Product"}
+            {isEdit ? "Update" : "Create"}
           </Button>
         </div>
       </form>
@@ -1460,6 +1440,6 @@ export function ProductForm({
           </div>
         </DialogContent>
       </Dialog>
-    </Form>
+      </>
   )
 }

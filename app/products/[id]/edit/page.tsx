@@ -24,7 +24,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
       duration: 10000,
     })
     
-    router.push("/products")
+    // router.push("/products")
   }
 
   if (!product) {

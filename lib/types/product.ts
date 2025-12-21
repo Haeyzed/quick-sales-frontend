@@ -79,7 +79,7 @@ export interface Product {
     warehouse_id: string
     quantity: number
   }>
-  is_diffPrice?: boolean
+  is_diff_price?: boolean
   diff_prices?: Array<{
     warehouse_id: string
     price: number

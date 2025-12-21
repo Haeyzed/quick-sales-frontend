@@ -11,7 +11,7 @@ export function SubmittedData({ data, className }: SubmittedDataProps) {
   return (
     <pre
       className={cn(
-        "max-h-[400px] overflow-auto rounded-md bg-muted p-4 text-sm",
+        "max-h-[400px] overflow-auto rounded-md bg-code text-code-foreground p-4 text-sm",
         className
       )}
     >

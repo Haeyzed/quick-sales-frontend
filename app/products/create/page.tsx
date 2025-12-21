@@ -20,7 +20,7 @@ export default function CreateProductPage() {
       duration: 10000,
     })
     
-    router.push("/products")
+    // router.push("/products")
   }
 
   return (

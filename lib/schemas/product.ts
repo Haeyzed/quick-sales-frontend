@@ -56,7 +56,7 @@ export const productFormSchema = z
         }),
       )
       .optional(),
-    is_diffPrice: z.boolean().optional(),
+    is_diff_price: z.boolean().optional(),
     diff_prices: z
       .array(
         z.object({
