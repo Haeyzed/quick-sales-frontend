@@ -445,7 +445,6 @@ export function ProductForm({
             </div>
           )}
 
-          {/* Section 3: Brand & Category */}
           <Controller
             control={form.control}
             name="brand_id"
@@ -460,7 +459,7 @@ export function ProductForm({
                     placeholder="Select brand..."
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsBrandDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -483,7 +482,7 @@ export function ProductForm({
                     placeholder="Select category..."
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsCategoryDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -492,10 +491,8 @@ export function ProductForm({
             )}
           />
 
-          {/* Section 4: Units (conditional - not for service/digital) */}
           {productType !== "service" && productType !== "digital" && (
             <>
-              {/* Product Unit */}
               <Controller
                 control={form.control}
                 name="unit_id"
@@ -510,7 +507,7 @@ export function ProductForm({
                         placeholder="Select unit..."
                         className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                       />
-                      <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
+                      <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
                         <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                       </Button>
                     </div>
@@ -555,7 +552,6 @@ export function ProductForm({
             </>
           )}
 
-          {/* Section 5: Pricing (Cost hidden for combo) */}
           {productType !== "combo" && (
             <Controller
               control={form.control}
@@ -618,7 +614,6 @@ export function ProductForm({
             )}
           />
 
-          {/* Section 6: Additional Pricing & Tax Information */}
           <Controller
             control={form.control}
             name="daily_sale_objective"
@@ -688,7 +683,7 @@ export function ProductForm({
                     placeholder="Select tax..."
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsTaxDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
