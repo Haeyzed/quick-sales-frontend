@@ -436,14 +436,15 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
-                <div className="flex gap-2">
+                <div className="flex">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
                     placeholder="Select brand..."
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)}>
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -458,14 +459,15 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="category_id">Category *</FieldLabel>
-                <div className="flex gap-2">
+                <div className="flex">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
                     placeholder="Select category..."
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)}>
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -473,7 +475,6 @@ export function ProductForm({
               </Field>
             )}
           />
-        </div>
 
         {/* Section 4: Units (conditional - not for service/digital) */}
         {productType !== "service" && productType !== "digital" && (
@@ -485,14 +486,15 @@ export function ProductForm({
               render={({ field, fieldState }) => (
                 <Field data-invalid={!!fieldState.error}>
                   <FieldLabel htmlFor="unit_id">Product Unit *</FieldLabel>
-                  <div className="flex gap-2">
+                  <div className="flex">
                     <ProductCombobox
                       value={field.value}
                       onChange={field.onChange}
                       options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                       placeholder="Select unit..."
+                      className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                     />
-                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)}>
+                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
                       <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                     </Button>
                   </div>
@@ -538,7 +540,6 @@ export function ProductForm({
         )}
 
         {/* Section 5: Pricing (Cost hidden for combo) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {productType !== "combo" && (
             <Controller
               control={form.control}
@@ -600,10 +601,8 @@ export function ProductForm({
               </Field>
             )}
           />
-        </div>
 
         {/* Section 6: Additional Pricing & Tax Information */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Controller
             control={form.control}
             name="daily_sale_objective"
@@ -665,17 +664,18 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="tax_id">Product Tax</FieldLabel>
-                <div className="flex gap-2">
+                <div className="flex">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={[...mockTaxes.map((t) => ({ value: t.id, label: t.name }))]}
                     placeholder="Select tax..."
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
                   />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
-                </div>
+                </div>  
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
             )}
@@ -715,17 +715,15 @@ export function ProductForm({
               </Field>
             )}
           />
-        </div>
 
         {/* Section 7: Warranty & Guarantee */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Controller
             control={form.control}
             name="warranty"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="warranty">Warranty</FieldLabel>
-                <div className="flex gap-2">
+                <div className="flex">
                   <Input
                     id="warranty"
                     type="number"
@@ -734,7 +732,7 @@ export function ProductForm({
                     {...field}
                     value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
-                    className="flex-1"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                   />
                   <Controller
                     control={form.control}
@@ -750,7 +748,7 @@ export function ProductForm({
                         ]}
                         placeholder="Select type..."
                         showClear={false}
-                        className="w-32"
+                        className="w-32 rounded-l-none shadow-none"
                       />
                     )}
                   />
@@ -766,7 +764,7 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="guarantee">Guarantee</FieldLabel>
-                <div className="flex gap-2">
+                <div className="flex">
                   <Input
                     id="guarantee"
                     type="number"
@@ -775,7 +773,7 @@ export function ProductForm({
                     {...field}
                     value={field.value || ""}
                     onChange={(e) => field.onChange(e.target.value ? Number.parseInt(e.target.value) : 0)}
-                    className="flex-1"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10"
                   />
                   <Controller
                     control={form.control}
@@ -791,7 +789,7 @@ export function ProductForm({
                         ]}
                         placeholder="Select type..."
                         showClear={false}
-                        className="w-32"
+                        className="w-32 rounded-l-none shadow-none"
                       />
                     )}
                   />
@@ -800,10 +798,8 @@ export function ProductForm({
               </Field>
             )}
           />
-        </div>
 
         {/* Section 8: Featured & Embedded Checkboxes */}
-        <div className="space-y-4">
           <Controller
             control={form.control}
             name="featured"
