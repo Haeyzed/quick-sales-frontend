@@ -5,6 +5,7 @@ import { BrandForm } from "@/components/brands/brand-form"
 import { CategoryForm } from "@/components/categories/category-form"
 import { DateTimePicker } from "@/components/shared/date-time-picker"
 import { TaxForm } from "@/components/taxes/tax-form"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -19,21 +20,20 @@ import {
   FileUploadList,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
+import { Input } from "@/components/ui/input"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
+import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import {
   Sortable,
   SortableContent,
   SortableItem,
   SortableItemHandle,
   SortableOverlay,
-} from "@/components/ui/sortable";
-import { Input } from "@/components/ui/input"
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
-import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
+} from "@/components/ui/sortable"
 import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { TagInput } from "@/components/ui/tag-input"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { UnitForm } from "@/components/units/unit-form"
 import { mockBrands } from "@/lib/mock-data/brands"
 import { mockCategories } from "@/lib/mock-data/categories"
@@ -451,15 +451,21 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
-                <div className="flex">
+                <div className="flex items-stretch">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
                     placeholder="Select brand..."
-                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
-                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsBrandDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setIsBrandDialogOpen(true)}
+                    className="rounded-l-none shadow-none h-auto"
+                  >
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -474,15 +480,21 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="category_id">Category *</FieldLabel>
-                <div className="flex">
+                <div className="flex items-stretch">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
                     placeholder="Select category..."
-                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
-                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsCategoryDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setIsCategoryDialogOpen(true)}
+                    className="rounded-l-none shadow-none h-auto"
+                  >
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
@@ -499,15 +511,21 @@ export function ProductForm({
                 render={({ field, fieldState }) => (
                   <Field data-invalid={!!fieldState.error}>
                     <FieldLabel htmlFor="unit_id">Product Unit *</FieldLabel>
-                    <div className="flex">
+                    <div className="flex items-stretch">
                       <ProductCombobox
                         value={field.value}
                         onChange={field.onChange}
                         options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
                         placeholder="Select unit..."
-                        className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                        className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                       />
-                      <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="icon"
+                        onClick={() => setIsUnitDialogOpen(true)}
+                        className="rounded-l-none shadow-none h-auto"
+                      >
                         <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                       </Button>
                     </div>
@@ -675,15 +693,21 @@ export function ProductForm({
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
                 <FieldLabel htmlFor="tax_id">Product Tax</FieldLabel>
-                <div className="flex">
+                <div className="flex items-stretch">
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
-                    options={[...mockTaxes.map((t) => ({ value: t.id, label: t.name }))]}
+                    options={mockTaxes.map((t) => ({ value: t.id, label: t.name }))}
                     placeholder="Select tax..."
-                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
-                  <Button type="button" variant="secondary" size="icon-lg" onClick={() => setIsTaxDialogOpen(true)} className="rounded-l-none shadow-none">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="icon"
+                    onClick={() => setIsTaxDialogOpen(true)}
+                    className="rounded-l-none shadow-none h-auto"
+                  >
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
                 </div>
