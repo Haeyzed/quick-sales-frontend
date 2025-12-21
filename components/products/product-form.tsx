@@ -266,9 +266,7 @@ export function ProductForm({
           The field labels marked with * are required input fields.
         </p>
 
-        {/* Section 1: Basic Product Information */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Product Type */}
           <Controller
             control={form.control}
             name="type"
@@ -292,7 +290,6 @@ export function ProductForm({
             )}
           />
 
-          {/* Product Name */}
           <Controller
             control={form.control}
             name="name"
@@ -330,7 +327,6 @@ export function ProductForm({
             )}
           />
 
-          {/* Barcode Symbology */}
           <Controller
             control={form.control}
             name="barcode_symbology"
