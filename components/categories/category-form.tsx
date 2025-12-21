@@ -36,7 +36,6 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ category, onSubmit, onCancel, generalSettings = { modules: [] } }: CategoryFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false)
   const [imageUpload, setImageUpload] = React.useState<File[]>([])
   const [iconUpload, setIconUpload] = React.useState<File[]>([])
 
@@ -60,8 +59,6 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
   })
 
   const handleSubmit = async (data: CategoryFormValues) => {
-    setIsLoading(true)
-    try {
       if (imageUpload.length > 0) {
         data.image = imageUpload[0].name
       }
@@ -69,9 +66,6 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
         data.icon = iconUpload[0].name
       }
       await onSubmit(data)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   const parentCategories = mockCategories.filter((c) => !c.parent_id && c.id !== category?.id)
@@ -288,8 +282,8 @@ export function CategoryForm({ category, onSubmit, onCancel, generalSettings = {
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Spinner data-icon="inline-start" />}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
           {category ? "Update" : "Create"}
         </Button>
       </div>

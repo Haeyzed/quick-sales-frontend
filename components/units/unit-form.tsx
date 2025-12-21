@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 
@@ -20,7 +19,6 @@ interface UnitFormProps {
 }
 
 export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<UnitFormValues>({
     resolver: zodResolver(unitSchema),
@@ -34,12 +32,7 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
   })
 
   const handleSubmit = async (data: UnitFormValues) => {
-    setIsLoading(true)
-    try {
-      await onSubmit(data)
-    } finally {
-      setIsLoading(false)
-    }
+    await onSubmit(data)
   }
 
   const baseUnits = mockUnits.filter((u) => !u.base_unit && u.id !== unit?.id)
@@ -143,8 +136,8 @@ export function UnitForm({ unit, onSubmit, onCancel }: UnitFormProps) {
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Spinner data-icon="inline-start" />}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
           {unit ? "Update" : "Create"}
         </Button>
       </div>

@@ -1,6 +1,5 @@
 "use client"
 
-import * as React from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm, Controller } from "react-hook-form"
 
@@ -18,7 +17,6 @@ interface TaxFormProps {
 }
 
 export function TaxForm({ tax, onSubmit, onCancel }: TaxFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false)
 
   const form = useForm<TaxFormValues>({
     resolver: zodResolver(taxSchema),
@@ -29,12 +27,7 @@ export function TaxForm({ tax, onSubmit, onCancel }: TaxFormProps) {
   })
 
   const handleSubmit = async (data: TaxFormValues) => {
-    setIsLoading(true)
-    try {
-      await onSubmit(data)
-    } finally {
-      setIsLoading(false)
-    }
+    await onSubmit(data)
   }
 
   return (
@@ -78,8 +71,8 @@ export function TaxForm({ tax, onSubmit, onCancel }: TaxFormProps) {
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Spinner data-icon="inline-start" />}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
           {tax ? "Update" : "Create"}
         </Button>
       </div>

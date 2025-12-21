@@ -33,7 +33,6 @@ interface BrandFormProps {
 }
 
 export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modules: [] } }: BrandFormProps) {
-  const [isLoading, setIsLoading] = React.useState(false)
   const [imageUpload, setImageUpload] = React.useState<File[]>([])
 
   const hasEcommerce = generalSettings.modules?.includes("ecommerce") || false
@@ -49,15 +48,10 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
   })
 
   const handleSubmit = async (data: BrandFormValues) => {
-    setIsLoading(true)
-    try {
       if (imageUpload.length > 0) {
         data.image = imageUpload[0].name
       }
       await onSubmit(data)
-    } finally {
-      setIsLoading(false)
-    }
   }
 
   return (
@@ -166,8 +160,8 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
-          {isLoading && <Spinner data-icon="inline-start" />}
+        <Button type="submit" disabled={form.formState.isSubmitting}>
+          {form.formState.isSubmitting && <Spinner data-icon="inline-start" />}
           {brand ? "Update" : "Create"}
         </Button>
       </div>

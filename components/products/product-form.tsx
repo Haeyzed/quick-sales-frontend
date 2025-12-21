@@ -19,6 +19,13 @@ import {
   FileUploadList,
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
+import {
+  Sortable,
+  SortableContent,
+  SortableItem,
+  SortableItemHandle,
+  SortableOverlay,
+} from "@/components/ui/sortable";
 import { Input } from "@/components/ui/input"
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
@@ -26,6 +33,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { TagInput } from "@/components/ui/tag-input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { UnitForm } from "@/components/units/unit-form"
 import { mockBrands } from "@/lib/mock-data/brands"
 import { mockCategories } from "@/lib/mock-data/categories"
@@ -40,7 +48,7 @@ import type { UnitFormValues } from "@/lib/schemas/unit"
 import type { ComboProduct } from "@/lib/types/product"
 import { cn } from "@/lib/utils"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Add01Icon, Cancel01Icon, InformationCircleIcon, RefreshIcon, Upload01Icon } from "@hugeicons/core-free-icons"
+import { Add01Icon, Cancel01Icon, Drag01Icon, InformationCircleIcon, RefreshIcon, Upload01Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 import type { SerializedEditorState } from "lexical"
 import Image from "next/image"
@@ -92,6 +100,15 @@ export function ProductForm({
   const [isCategoryDialogOpen, setIsCategoryDialogOpen] = React.useState(false)
   const [isUnitDialogOpen, setIsUnitDialogOpen] = React.useState(false)
   const [isTaxDialogOpen, setIsTaxDialogOpen] = React.useState(false)
+  const [imageToDelete, setImageToDelete] = useState<string | undefined>();
+  const handleDeleteImage = () => {
+    if (!imageToDelete) return;
+    const currentImages = form.getValues("images") || initialData?.images || [];
+    const updatedImages = currentImages.filter((img) => img !== imageToDelete);
+    form.setValue("images", updatedImages);
+    if (initialData) initialData.images = updatedImages;
+    setImageToDelete(undefined);
+  };
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
@@ -243,7 +260,7 @@ export function ProductForm({
   const hasModule = (module: string) => generalSettings.modules.includes(module)
 
   return (
-    <TooltipProvider>
+    <>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <p className="text-sm text-muted-foreground italic">
           The field labels marked with * are required input fields.
@@ -393,41 +410,40 @@ export function ProductForm({
             />
           )}
 
-        {/* Section 2: Combo Products (conditional) */}
-        {productType === "combo" && (
-        <div className="md:col-span-3 space-y-4">
-            <div>
-              <FieldLabel>Add Product</FieldLabel>
-              <ComboProductSelector
-                onAddProduct={(product) => {
-                  const existingIndex = comboProducts.findIndex((p) => p.product_id === product.id)
-                  if (existingIndex === -1) {
-                    setComboProducts([
-                      ...comboProducts,
-                      {
-                        product_id: product.id,
-                        product_name: product.name,
-                        product_code: product.code,
-                        wastage_percent: 0,
-                        quantity: 1,
-                        unit_id: product.unit_id,
-                        unit_cost: product.cost || 0,
-                        unit_price: product.price || 0,
-                        subtotal: product.price || 0,
-                      },
-                    ])
-                  }
-                }}
-                existingProductIds={comboProducts.map((p) => p.product_id)}
-              />
-            </div>
+          {productType === "combo" && (
+            <div className="md:col-span-3 space-y-4">
+              <div>
+                <FieldLabel>Add Product</FieldLabel>
+                <ComboProductSelector
+                  onAddProduct={(product) => {
+                    const existingIndex = comboProducts.findIndex((p) => p.product_id === product.id)
+                    if (existingIndex === -1) {
+                      setComboProducts([
+                        ...comboProducts,
+                        {
+                          product_id: product.id,
+                          product_name: product.name,
+                          product_code: product.code,
+                          wastage_percent: 0,
+                          quantity: 1,
+                          unit_id: product.unit_id,
+                          unit_cost: product.cost || 0,
+                          unit_price: product.price || 0,
+                          subtotal: product.price || 0,
+                        },
+                      ])
+                    }
+                  }}
+                  existingProductIds={comboProducts.map((p) => p.product_id)}
+                />
+              </div>
 
-            <div>
-              <FieldLabel>Combo Products</FieldLabel>
-              <ComboProductTable products={comboProducts} onChange={setComboProducts} />
+              <div>
+                <FieldLabel>Combo Products</FieldLabel>
+                <ComboProductTable products={comboProducts} onChange={setComboProducts} />
+              </div>
             </div>
-          </div>
-        )}
+          )}
 
           {/* Section 3: Brand & Category */}
           <Controller
@@ -476,70 +492,70 @@ export function ProductForm({
             )}
           />
 
-        {/* Section 4: Units (conditional - not for service/digital) */}
-        {productType !== "service" && productType !== "digital" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Product Unit */}
-            <Controller
-              control={form.control}
-              name="unit_id"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="unit_id">Product Unit *</FieldLabel>
-                  <div className="flex">
+          {/* Section 4: Units (conditional - not for service/digital) */}
+          {productType !== "service" && productType !== "digital" && (
+            <>
+              {/* Product Unit */}
+              <Controller
+                control={form.control}
+                name="unit_id"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="unit_id">Product Unit *</FieldLabel>
+                    <div className="flex">
+                      <ProductCombobox
+                        value={field.value}
+                        onChange={field.onChange}
+                        options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
+                        placeholder="Select unit..."
+                        className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                      />
+                      <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
+                        <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
+                )}
+              />
+
+              <Controller
+                control={form.control}
+                name="sale_unit_id"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="sale_unit_id">Sale Unit</FieldLabel>
                     <ProductCombobox
                       value={field.value}
                       onChange={field.onChange}
                       options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                      placeholder="Select unit..."
-                      className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full"
+                      placeholder="Select sale unit..."
                     />
-                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsUnitDialogOpen(true)} className="rounded-l-none shadow-none">
-                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
+                )}
+              />
 
-            <Controller
-              control={form.control}
-              name="sale_unit_id"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="sale_unit_id">Sale Unit</FieldLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                    placeholder="Select sale unit..."
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
+              <Controller
+                control={form.control}
+                name="purchase_unit_id"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error}>
+                    <FieldLabel htmlFor="purchase_unit_id">Purchase Unit</FieldLabel>
+                    <ProductCombobox
+                      value={field.value}
+                      onChange={field.onChange}
+                      options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
+                      placeholder="Select purchase unit..."
+                    />
+                    <FieldError>{fieldState.error?.message}</FieldError>
+                  </Field>
+                )}
+              />
+            </>
+          )}
 
-            <Controller
-              control={form.control}
-              name="purchase_unit_id"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="purchase_unit_id">Purchase Unit</FieldLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                    placeholder="Select purchase unit..."
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-          </div>
-        )}
-
-        {/* Section 5: Pricing (Cost hidden for combo) */}
+          {/* Section 5: Pricing (Cost hidden for combo) */}
           {productType !== "combo" && (
             <Controller
               control={form.control}
@@ -602,7 +618,7 @@ export function ProductForm({
             )}
           />
 
-        {/* Section 6: Additional Pricing & Tax Information */}
+          {/* Section 6: Additional Pricing & Tax Information */}
           <Controller
             control={form.control}
             name="daily_sale_objective"
@@ -675,7 +691,7 @@ export function ProductForm({
                   <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)} className="rounded-l-none shadow-none">
                     <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
                   </Button>
-                </div>  
+                </div>
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
             )}
@@ -716,7 +732,6 @@ export function ProductForm({
             )}
           />
 
-        {/* Section 7: Warranty & Guarantee */}
           <Controller
             control={form.control}
             name="warranty"
@@ -799,7 +814,6 @@ export function ProductForm({
             )}
           />
 
-        {/* Section 8: Featured & Embedded Checkboxes */}
           <Controller
             control={form.control}
             name="featured"
@@ -829,7 +843,6 @@ export function ProductForm({
           />
         </div>
 
-        {/* Section 9: Initial Stock (conditional) */}
         {!isVariant && !isBatch && !isImei && (
           <Controller
             control={form.control}
@@ -867,7 +880,6 @@ export function ProductForm({
           </Table>
         )}
 
-        {/* Section 10: Product Images */}
         <Controller
           control={form.control}
           name="images"
@@ -883,20 +895,13 @@ export function ProductForm({
                 accept="image/*"
                 maxFiles={10}
                 maxSize={5 * 1024 * 1024}
-                onFileReject={(_, message) => {
-                  form.setError("images", {
-                    message,
-                  })
-                }}
                 multiple
               >
                 <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
                   <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
                   Drag and drop or
                   <FileUploadTrigger asChild>
-                    <Button variant="link" size="sm" className="p-0">
-                      choose files
-                    </Button>
+                    <Button variant="link" size="sm" className="p-0">choose files</Button>
                   </FileUploadTrigger>
                   to upload
                 </FileUploadDropzone>
@@ -908,49 +913,100 @@ export function ProductForm({
                       <FileUploadItemDelete asChild>
                         <Button variant="ghost" size="icon" className="size-7">
                           <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
                         </Button>
                       </FileUploadItemDelete>
                     </FileUploadItem>
                   ))}
                 </FileUploadList>
               </FileUpload>
-              {/* Existing Images Display */}
+
               {initialData?.images && initialData.images.length > 0 && (
-                <div className="mt-4">
-                  <p className="text-sm font-medium mb-2">Existing Images</p>
-                  <div className="grid grid-cols-4 gap-4">
-                    {initialData.images.map((imageUrl, index) => (
-                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-                        <ImageZoom
-                          zoomMargin={100}
-                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                        >
+                <div className="mt-6 border rounded-lg p-4 bg-muted/10">
+                  <p className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
+                    <HugeiconsIcon icon={Drag01Icon} className="size-4" />
+                    Rearrange Images (Drag the handle icon)
+                  </p>
+
+                  <Sortable
+                    value={initialData.images}
+                    onValueChange={(newValue) => {
+                      console.log("Reordered Images List:", newValue);
+                      field.onChange(newValue);
+                    }}
+                    orientation="mixed"
+                  >
+                    <SortableContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                      {initialData.images.map((imageUrl, index) => (
+                        <SortableItem key={imageUrl} value={imageUrl} asChild>
+                          <div className="group relative aspect-square rounded-xl border bg-background shadow-sm hover:shadow-md transition-all overflow-hidden">
+                            <div className="h-full w-full">
+                              <ImageZoom zoomMargin={100} backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}>
+                                <Image
+                                  src={imageUrl || "/placeholder.svg"}
+                                  alt={`Product ${index}`}
+                                  width={400}
+                                  height={400}
+                                  className="object-cover"
+                                  unoptimized
+                                />
+                              </ImageZoom>
+                            </div>
+
+                            <div className="absolute top-2 right-2 flex flex-col gap-1.5 z-30 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <SortableItemHandle asChild>
+                                <Button
+                                  type="button"
+                                  variant="secondary"
+                                  size="icon"
+                                  className="size-7 cursor-grab active:cursor-grabbing shadow-sm"
+                                >
+                                  <HugeiconsIcon icon={Drag01Icon} strokeWidth={2} className="h-3.5 w-3.5" />
+                                </Button>
+                              </SortableItemHandle>
+
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="icon"
+                                className="size-8 shadow-md"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setImageToDelete(imageUrl);
+                                }}
+                              >
+                                <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+
+                            <div className="absolute bottom-1 left-1 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">
+                              {index + 1}
+                            </div>
+                          </div>
+                        </SortableItem>
+                      ))}
+                    </SortableContent>
+
+                    <SortableOverlay>
+                      {(activeItem) => (
+                        <div className="aspect-square rounded-xl border-2 border-primary bg-background overflow-hidden opacity-80 shadow-2xl">
                           <Image
-                            src={imageUrl || "/placeholder.svg"}
-                            alt={`Existing image ${index + 1}`}
-                            width={400}
-                            height={400}
+                            src={activeItem.value as string}
+                            alt="Dragging"
+                            fill
                             className="object-cover"
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                             unoptimized
                           />
-                        </ImageZoom>
-                      </div>
-                    ))}
-                  </div>
+                        </div>
+                      )}
+                    </SortableOverlay>
+                  </Sortable>
                 </div>
               )}
-              <FieldDescription>
-                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will
-                be base image.
-              </FieldDescription>
               <FieldError>{fieldState.error?.message}</FieldError>
             </Field>
           )}
         />
 
-        {/* Section 11: Product Details */}
         <Controller
           control={form.control}
           name="product_details"
@@ -961,7 +1017,6 @@ export function ProductForm({
                 editorSerializedState={productDetailsEditorState || undefined}
                 onSerializedChange={(value) => {
                   setProductDetailsEditorState(value)
-                  // Convert editor state to JSON string for form
                   field.onChange(JSON.stringify(value))
                 }}
               />
@@ -970,7 +1025,6 @@ export function ProductForm({
           )}
         />
 
-        {/* Section 12: Variant Section */}
         {!isBatch && productType !== "combo" && (
           <Controller
             control={form.control}
@@ -1084,7 +1138,6 @@ export function ProductForm({
           </>
         )}
 
-        {/* Section 13: Different Price for Warehouse */}
         {mockWarehouses.length > 0 && productType !== "combo" && (
           <Controller
             control={form.control}
@@ -1123,7 +1176,6 @@ export function ProductForm({
           </Table>
         )}
 
-        {/* Section 14: Batch Checkbox */}
         <Controller
           control={form.control}
           name="is_batch"
@@ -1135,7 +1187,6 @@ export function ProductForm({
           )}
         />
 
-        {/* Section 15: IMEI Checkbox */}
         <Controller
           control={form.control}
           name="is_imei"
@@ -1147,7 +1198,6 @@ export function ProductForm({
           )}
         />
 
-        {/* Section 16: Promotion Section */}
         <div className="space-y-4">
           <Controller
             control={form.control}
@@ -1219,7 +1269,6 @@ export function ProductForm({
           )}
         </div>
 
-        {/* Section 17: Woocommerce Sync */}
         {hasModule("woocommerce") && (
           <Controller
             control={form.control}
@@ -1233,7 +1282,6 @@ export function ProductForm({
           />
         )}
 
-        {/* Section 18: Sell Online & In Stock */}
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
           <>
             <Controller
@@ -1262,7 +1310,6 @@ export function ProductForm({
           </>
         )}
 
-        {/* Section 19: Product Active & Addon */}
         <div className="space-y-4">
           <Controller
             control={form.control}
@@ -1308,7 +1355,6 @@ export function ProductForm({
           )}
         </div>
 
-        {/* Section 20: Product Tags */}
         <Controller
           control={form.control}
           name="product_tags"
@@ -1321,7 +1367,6 @@ export function ProductForm({
           )}
         />
 
-        {/* Section 21: SEO Section */}
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
           <div className="space-y-4">
             <div>
@@ -1355,14 +1400,12 @@ export function ProductForm({
           </div>
         )}
 
-        {/* Section 22: Related Products */}
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
           <div>
             <RelatedProductsSelector value={relatedProducts} onChange={setRelatedProducts} />
           </div>
         )}
 
-        {/* Submit Button */}
         <div className="flex justify-end gap-2">
           <Button type="button" variant="outline">
             Cancel
@@ -1429,6 +1472,26 @@ export function ProductForm({
           </div>
         </DialogContent>
       </Dialog>
-    </TooltipProvider>
+
+      <AlertDialog open={!!imageToDelete} onOpenChange={() => setImageToDelete(undefined)}>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
+              <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} />
+            </AlertDialogMedia>
+            <AlertDialogTitle>Remove Image?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will remove the image from the product gallery. You can re-upload it later if needed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel variant="ghost">Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleDeleteImage}>
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   )
 }
