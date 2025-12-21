@@ -10,6 +10,9 @@ import { Delete01Icon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { ComboProduct } from "@/lib/types/product"
 import { mockProducts } from "@/lib/mock-data/products"
+import { mockUnits } from "@/lib/mock-data/units"
+import type { Unit } from "@/lib/types/unit"
+import { ProductCombobox } from "./product-combobox"
 
 interface ComboProductTableProps {
   products: ComboProduct[]
@@ -21,20 +24,23 @@ export function ComboProductTable({ products, onChange }: ComboProductTableProps
     onChange(products.filter((_, i) => i !== index))
   }
 
-  const handleUpdate = (index: number, field: keyof ComboProduct, value: number) => {
-    const updated = [...products]
-    updated[index] = { ...updated[index], [field]: value }
+  // Change 'value: number' to 'value: string | number'
+const handleUpdate = (index: number, field: keyof ComboProduct, value: string | number) => {
+  const updated = [...products]
+  updated[index] = { ...updated[index], [field]: value }
 
-    // Recalculate subtotal
-    const product = updated[index]
-    product.subtotal = product.quantity * product.unit_price * (1 + product.wastage_percent / 100)
+  // Recalculate subtotal
+  const product = updated[index]
+  
+  // Ensure we are calculating with numbers
+  const qty = typeof product.quantity === 'string' ? parseFloat(product.quantity) : product.quantity
+  const price = typeof product.unit_price === 'string' ? parseFloat(product.unit_price) : product.unit_price
+  const wastage = typeof product.wastage_percent === 'string' ? parseFloat(product.wastage_percent) : product.wastage_percent
 
-    onChange(updated)
-  }
+  product.subtotal = qty * price * (1 + wastage / 100)
 
-  if (products.length === 0) {
-    return <div className="border rounded-lg p-8 text-center text-muted-foreground mt-2">No combo products added yet</div>
-  }
+  onChange(updated)
+}
 
   return (
     <div className="border rounded-lg mt-2">
@@ -89,14 +95,23 @@ export function ComboProductTable({ products, onChange }: ComboProductTableProps
                 />
               </TableCell>
               <TableCell>
-                <Input
-                  type="number"
-                  value={product.quantity}
-                  onChange={(e) => handleUpdate(index, "quantity", Number.parseFloat(e.target.value))}
-                  className="w-24"
-                  min="1"
-                  step="0.01"
-                />
+                <div className="flex">
+                  <Input
+                    type="number"
+                    value={product.quantity}
+                    onChange={(e) => handleUpdate(index, "quantity", Number.parseFloat(e.target.value))}
+                    min="1"
+                    step="0.01"
+                    className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-24"
+                  />
+                  <ProductCombobox
+                    value={product.unit_id.toString()}
+                    onChange={(value: string) => handleUpdate(index, "unit_id", value)}
+                    options={mockUnits.map((u: Unit) => ({ value: u.id.toString(), label: u.name }))}
+                    placeholder="Select unit"
+                    className="w-32 rounded-l-none shadow-none"
+                  />
+                </div>
               </TableCell>
               <TableCell>{product.unit_cost.toFixed(2)}</TableCell>
               <TableCell>

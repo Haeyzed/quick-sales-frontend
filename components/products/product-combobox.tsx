@@ -8,6 +8,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
+import Image from "next/image" // Import Image component
 
 interface ComboboxOption {
   value: string
@@ -48,8 +49,19 @@ export function ProductCombobox({
 
         <ComboboxList>
           {(item) => (
-            <ComboboxItem key={item.value} value={item}>
-              {item.label}
+            <ComboboxItem key={item.value} value={item} className="flex items-center gap-2">
+              {item.image && (
+                <div className="relative size-6 overflow-hidden rounded-sm border bg-muted">
+                  <Image
+                    src={item.image}
+                    alt={item.label}
+                    fill
+                    className="object-cover"
+                    unoptimized
+                  />
+                </div>
+              )}
+              <span>{item.label}</span>
             </ComboboxItem>
           )}
         </ComboboxList>

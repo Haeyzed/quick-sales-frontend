@@ -282,8 +282,7 @@ export function ProductForm({
                     { value: "digital", label: "Digital" },
                     { value: "service", label: "Service" },
                   ]}
-                  placeholder="Select type..."
-                  showClear={false}
+                  placeholder="Select type"
                 />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
@@ -344,15 +343,14 @@ export function ProductForm({
                     { value: "EAN8", label: "EAN-8" },
                     { value: "EAN13", label: "EAN-13" },
                   ]}
-                  placeholder="Select symbology..."
-                  showClear={false}
+                  placeholder="Select symbology"
                 />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
             )}
           />
 
-          {(productType === "digital" || productType === "combo") && (
+          {(productType === "digital") && (
             <Controller
               control={form.control}
               name="file"
@@ -451,8 +449,8 @@ export function ProductForm({
                   <ProductCombobox
                     value={field.value}
                     onChange={field.onChange}
-                    options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
-                    placeholder="Select brand..."
+                    options={mockBrands.map((b) => ({ value: b.id, label: b.name, image: b.image }))}
+                    placeholder="Select brand"
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
                   <Button
@@ -481,7 +479,7 @@ export function ProductForm({
                     value={field.value}
                     onChange={field.onChange}
                     options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
-                    placeholder="Select category..."
+                    placeholder="Select category"
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
                   <Button
@@ -512,7 +510,7 @@ export function ProductForm({
                         value={field.value}
                         onChange={field.onChange}
                         options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                        placeholder="Select unit..."
+                        placeholder="Select unit"
                         className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                       />
                       <Button
@@ -540,7 +538,7 @@ export function ProductForm({
                       value={field.value}
                       onChange={field.onChange}
                       options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                      placeholder="Select sale unit..."
+                      placeholder="Select sale unit"
                     />
                     <FieldError>{fieldState.error?.message}</FieldError>
                   </Field>
@@ -557,7 +555,7 @@ export function ProductForm({
                       value={field.value}
                       onChange={field.onChange}
                       options={mockUnits.map((u) => ({ value: u.id, label: u.name }))}
-                      placeholder="Select purchase unit..."
+                      placeholder="Select purchase unit"
                     />
                     <FieldError>{fieldState.error?.message}</FieldError>
                   </Field>
@@ -566,7 +564,7 @@ export function ProductForm({
             </>
           )}
 
-          {productType !== "combo" && (
+          {(productType === "standard" || productType === "combo") && (
             <Controller
               control={form.control}
               name="cost"
@@ -587,6 +585,46 @@ export function ProductForm({
               )}
             />
           )}
+
+          <Controller
+            control={form.control}
+            name="profit_margin_type"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="profit_margin_type">Profit Margin Type</FieldLabel>
+                <ProductCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "percentage", label: "Percentage" },
+                    { value: "flat", label: "Flat" },
+                  ]}
+                  placeholder="Select profit margin type"
+                />
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="profit_margin"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="profit_margin">Profit Margin</FieldLabel>
+                <Input
+                  id="profit_margin"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  {...field}
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                />
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
 
           <Controller
             control={form.control}
@@ -694,7 +732,7 @@ export function ProductForm({
                     value={field.value}
                     onChange={field.onChange}
                     options={mockTaxes.map((t) => ({ value: t.id, label: t.name }))}
-                    placeholder="Select tax..."
+                    placeholder="Select tax"
                     className="-me-px rounded-r-none shadow-none focus-visible:z-10 w-full h-full"
                   />
                   <Button
@@ -739,8 +777,7 @@ export function ProductForm({
                     { value: "exclusive", label: "Exclusive" },
                     { value: "inclusive", label: "Inclusive" },
                   ]}
-                  placeholder="Select method..."
-                  showClear={false}
+                  placeholder="Select method"
                 />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
@@ -776,8 +813,7 @@ export function ProductForm({
                           { value: "months", label: "Months" },
                           { value: "years", label: "Years" },
                         ]}
-                        placeholder="Select type..."
-                        showClear={false}
+                        placeholder="Select type"
                         className="w-32 rounded-l-none shadow-none"
                       />
                     )}
@@ -817,8 +853,7 @@ export function ProductForm({
                           { value: "months", label: "Months" },
                           { value: "years", label: "Years" },
                         ]}
-                        placeholder="Select type..."
-                        showClear={false}
+                        placeholder="Select type"
                         className="w-32 rounded-l-none shadow-none"
                       />
                     )}
@@ -900,7 +935,19 @@ export function ProductForm({
           name="images"
           render={({ field, fieldState }) => (
             <Field data-invalid={!!fieldState.error}>
-              <FieldLabel htmlFor="images">Product Image</FieldLabel>
+            <FieldLabel className="flex items-center gap-1">
+              Product Image
+              <Tooltip>
+                <TooltipTrigger type="button">
+                  <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>
+                  You can upload multiple image. Only .jpeg, .jpg, .png, .gif file can be uploaded. First image will be base image.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </FieldLabel>
               <FileUpload
                 value={imagesUpload}
                 onValueChange={(files) => {
@@ -1040,7 +1087,7 @@ export function ProductForm({
           )}
         />
 
-        {!isBatch && productType !== "combo" && (
+        {!isBatch && productType !== "combo" && productType !== "digital" && productType !== "service" && (
           <Controller
             control={form.control}
             name="is_variant"
@@ -1153,7 +1200,7 @@ export function ProductForm({
           </>
         )}
 
-        {mockWarehouses.length > 0 && productType !== "combo" && (
+        {mockWarehouses.length > 0 && productType !== "combo" && productType !== "digital" && productType !== "service" && (
           <Controller
             control={form.control}
             name="is_diff_price"
@@ -1191,27 +1238,31 @@ export function ProductForm({
           </Table>
         )}
 
-        <Controller
-          control={form.control}
-          name="is_batch"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error} orientation="horizontal">
-              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              <FieldLabel className="font-normal">This product has batch and expired date</FieldLabel>
-            </Field>
-          )}
-        />
+        {productType !== "digital" && productType !== "service" && (
+          <Controller
+            control={form.control}
+            name="is_batch"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">This product has batch and expired date</FieldLabel>
+              </Field>
+            )}
+          />
+        )}
 
-        <Controller
-          control={form.control}
-          name="is_imei"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={!!fieldState.error} orientation="horizontal">
-              <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-              <FieldLabel className="font-normal">This product has IMEI or Serial numbers</FieldLabel>
-            </Field>
-          )}
-        />
+        {productType !== "service" && (
+          <Controller
+            control={form.control}
+            name="is_imei"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                <FieldLabel className="font-normal">This product has IMEI or Serial numbers</FieldLabel>
+              </Field>
+            )}
+          />
+        )}
 
         <div className="space-y-4">
           <Controller
@@ -1266,10 +1317,10 @@ export function ProductForm({
 
               <Controller
                 control={form.control}
-                name="last_date"
+                name="ending_date"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={!!fieldState.error}>
-                    <FieldLabel htmlFor="last_date">Promotion Ends</FieldLabel>
+                    <FieldLabel htmlFor="ending_date">Promotion Ends</FieldLabel>
                     <DateTimePicker
                       value={field.value}
                       onChange={field.onChange}

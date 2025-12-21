@@ -11,6 +11,8 @@ export type TaxMethod = "exclusive" | "inclusive"
 
 export type WarrantyType = "days" | "months" | "years"
 
+export type ProfitMarginType = "percentage" | "flat"
+
 export interface ProductVariant {
   id: string
   name: string
@@ -39,7 +41,7 @@ export interface WarehouseStock {
 }
 
 export interface GeneralSettings {
-  modules: string[] // Array of enabled modules like 'ecommerce', 'restaurant', 'woocommerce'
+  modules: string[]
 }
 
 export interface Product {
@@ -55,6 +57,7 @@ export interface Product {
   sale_unit_id?: string
   purchase_unit_id?: string
   cost: number
+  profit_margin_type?: ProfitMarginType
   profit_margin?: number
   price: number
   wholesale_price?: number
@@ -73,7 +76,7 @@ export interface Product {
   variants?: ProductVariant[]
   is_batch: boolean
   is_imei: boolean
-  is_embeded?: boolean // Added is_embeded field
+  is_embeded?: boolean
   is_initial_stock?: boolean
   initial_stock?: Array<{
     warehouse_id: string
@@ -90,7 +93,7 @@ export interface Product {
   in_stock?: boolean
   product_tags?: string[]
   starting_date?: Date
-  last_date?: Date
+  ending_date?: Date
   meta_title?: string
   meta_description?: string
   variant_option?: string[]
@@ -106,7 +109,7 @@ export interface Product {
     startTime?: string
     endTime?: string
   }
-  related_products?: string[] // Added related_products
+  related_products?: string[]
   is_active: boolean
   created_at: string
   updated_at: string

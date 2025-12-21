@@ -14,11 +14,12 @@ export const productFormSchema = z
     barcode_symbology: z.enum(["C128", "C39", "UPCA", "UPCE", "EAN8", "EAN13"]),
     file: z.string().optional(),
     brand_id: z.string().optional(),
-    category_id: z.string().min(1, "Category is required"),
-    unit_id: z.string().optional(),
+    category_id: z.string().min(1, "Product category is required"),
+    unit_id: z.string().min(1, "Product unit is required"),
     sale_unit_id: z.string().optional(),
     purchase_unit_id: z.string().optional(),
-    cost: z.number().min(0, "Cost must be greater than or equal to 0"),
+    cost: z.number().min(0.01, "Cost must be greater than or equal to 0.01"),
+    profit_margin_type: z.enum(["percentage", "flat"]).optional(),
     profit_margin: z.number().optional(),
     price: z.number().min(0, "Price must be greater than or equal to 0"),
     wholesale_price: z.number().optional(),
@@ -71,7 +72,7 @@ export const productFormSchema = z
     in_stock: z.boolean().optional(),
     product_tags: z.array(z.string()).optional(),
     starting_date: z.date().optional(),
-    last_date: z.date().optional(),
+    ending_date: z.date().optional(),
     meta_title: z.string().optional(),
     meta_description: z.string().optional(),
     variant_option: z.array(z.string()).optional(),
@@ -158,7 +159,31 @@ export const productFormSchema = z
   )
   .refine(
     (data) => {
-      if (data.promotion && (!data.starting_date || !data.last_date)) {
+      if (data.profit_margin_type === "percentage" && !data.profit_margin) {
+        return false
+      }
+      return true
+    },
+    {
+      message: "Profit margin is required when profit margin type is percentage",
+      path: ["profit_margin"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.profit_margin_type === "flat" && !data.profit_margin) {
+        return false
+      }
+      return true
+    },
+    {
+      message: "Profit margin is required when profit margin type is flat",
+      path: ["profit_margin"],
+    },
+  )
+  .refine(
+    (data) => {
+      if (data.promotion && (!data.starting_date || !data.ending_date)) {
         return false
       }
       return true
