@@ -1,12 +1,14 @@
 "use client"
 
-import { useState, useEffect, type ReactNode } from "react"
-import { useForm, Controller } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { type ProductFormValues, productFormSchema, type GeneralSettingsValues } from "@/lib/schemas/product"
+import { Editor } from "@/components/blocks/editor-00/editor"
+import { BrandForm } from "@/components/brands/brand-form"
+import { CategoryForm } from "@/components/categories/category-form"
+import { DateTimePicker } from "@/components/shared/date-time-picker"
+import { TaxForm } from "@/components/taxes/tax-form"
 import { Button } from "@/components/ui/button"
-import { Field, FieldLabel, FieldError, FieldDescription } from "@/components/ui/field"
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field"
 import {
   FileUpload,
   FileUploadDropzone,
@@ -18,39 +20,36 @@ import {
   FileUploadTrigger,
 } from "@/components/ui/file-upload"
 import { Input } from "@/components/ui/input"
-import { Checkbox } from "@/components/ui/checkbox"
-import { HugeiconsIcon } from "@hugeicons/react"
-import { RefreshIcon, Add01Icon, Cancel01Icon, Upload01Icon, InformationCircleIcon } from "@hugeicons/core-free-icons"
-import { ProductCombobox } from "./product-combobox"
-import { ComboProductTable } from "./combo-product-table"
-import { ComboProductSelector } from "./combo-product-selector"
-import { DateTimePicker } from "@/components/shared/date-time-picker"
-import { RelatedProductsSelector } from "./related-products-selector"
-import { TagInput } from "@/components/ui/tag-input"
-import { InputGroup, InputGroupInput, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Editor } from "@/components/blocks/editor-00/editor"
-import type { SerializedEditorState } from "lexical"
-import type { ComboProduct } from "@/lib/types/product"
-import Image from "next/image"
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
-import { cn } from "@/lib/utils"
-import React from "react"
 import { Spinner } from "@/components/ui/spinner"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { BrandForm } from "@/components/brands/brand-form"
-import { CategoryForm } from "@/components/categories/category-form"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { TagInput } from "@/components/ui/tag-input"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { UnitForm } from "@/components/units/unit-form"
-import { TaxForm } from "@/components/taxes/tax-form"
 import { mockBrands } from "@/lib/mock-data/brands"
 import { mockCategories } from "@/lib/mock-data/categories"
-import { mockUnits } from "@/lib/mock-data/units"
 import { mockTaxes } from "@/lib/mock-data/taxes"
+import { mockUnits } from "@/lib/mock-data/units"
 import { mockWarehouses } from "@/lib/mock-data/warehouses"
 import type { BrandFormValues } from "@/lib/schemas/brand"
 import type { CategoryFormValues } from "@/lib/schemas/category"
-import type { UnitFormValues } from "@/lib/schemas/unit"
+import { productFormSchema, type GeneralSettingsValues, type ProductFormValues } from "@/lib/schemas/product"
 import type { TaxFormValues } from "@/lib/schemas/tax"
+import type { UnitFormValues } from "@/lib/schemas/unit"
+import type { ComboProduct } from "@/lib/types/product"
+import { cn } from "@/lib/utils"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Add01Icon, Cancel01Icon, InformationCircleIcon, RefreshIcon, Upload01Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import type { SerializedEditorState } from "lexical"
+import Image from "next/image"
+import React, { useEffect, useState } from "react"
+import { Controller, useForm } from "react-hook-form"
+import { ComboProductSelector } from "./combo-product-selector"
+import { ComboProductTable } from "./combo-product-table"
+import { ProductCombobox } from "./product-combobox"
+import { RelatedProductsSelector } from "./related-products-selector"
 
 interface ProductFormProps {
   initialData?: Partial<ProductFormValues>
@@ -244,12 +243,13 @@ export function ProductForm({
   const hasModule = (module: string) => generalSettings.modules.includes(module)
 
   return (
-    <>
+    <TooltipProvider>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
         <p className="text-sm text-muted-foreground italic">
           The field labels marked with * are required input fields.
         </p>
 
+        {/* Section 1: Basic Product Information */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Product Type */}
           <Controller
@@ -339,7 +339,7 @@ export function ProductForm({
             )}
           />
 
-          {productType === "digital" && (
+          {(productType === "digital" || productType === "combo") && (
             <Controller
               control={form.control}
               name="file"
@@ -393,55 +393,9 @@ export function ProductForm({
             />
           )}
 
-          {/* Brand */}
-          <Controller
-            control={form.control}
-            name="brand_id"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
-                <div className="flex gap-2">
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
-                    placeholder="Select brand..."
-                  />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)}>
-                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                  </Button>
-                </div>
-                <FieldError>{fieldState.error?.message}</FieldError>
-              </Field>
-            )}
-          />
-
-          {/* Category */}
-          <Controller
-            control={form.control}
-            name="category_id"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor="category_id">Category *</FieldLabel>
-                <div className="flex gap-2">
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
-                    placeholder="Select category..."
-                  />
-                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)}>
-                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                  </Button>
-                </div>
-                <FieldError>{fieldState.error?.message}</FieldError>
-              </Field>
-            )}
-          />
-        </div>
-
+        {/* Section 2: Combo Products (conditional) */}
         {productType === "combo" && (
-          <div className="space-y-4">
+        <div className="md:col-span-3 space-y-4">
             <div>
               <FieldLabel>Add Product</FieldLabel>
               <ComboProductSelector
@@ -475,6 +429,53 @@ export function ProductForm({
           </div>
         )}
 
+          {/* Section 3: Brand & Category */}
+          <Controller
+            control={form.control}
+            name="brand_id"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="brand_id">Brand</FieldLabel>
+                <div className="flex gap-2">
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockBrands.map((b) => ({ value: b.id, label: b.name }))}
+                    placeholder="Select brand..."
+                  />
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsBrandDialogOpen(true)}>
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="category_id"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="category_id">Category *</FieldLabel>
+                <div className="flex gap-2">
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={mockCategories.map((c) => ({ value: c.id, label: c.name }))}
+                    placeholder="Select category..."
+                  />
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsCategoryDialogOpen(true)}>
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+        </div>
+
+        {/* Section 4: Units (conditional - not for service/digital) */}
         {productType !== "service" && productType !== "digital" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Product Unit */}
@@ -536,8 +537,9 @@ export function ProductForm({
           </div>
         )}
 
-        {productType !== "combo" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Section 5: Pricing (Cost hidden for combo) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {productType !== "combo" && (
             <Controller
               control={form.control}
               name="cost"
@@ -557,265 +559,23 @@ export function ProductForm({
                 </Field>
               )}
             />
+          )}
 
-            <Controller
-              control={form.control}
-              name="profit_margin"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="profit_margin">Profit Margin (%)</FieldLabel>
-                  <InputGroup>
-                    <InputGroupInput
-                      id="profit_margin"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                    <InputGroupAddon>
-                      <span className="text-muted-foreground">%</span>
-                    </InputGroupAddon>
-                  </InputGroup>
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="price"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="price">Product Price *</FieldLabel>
-                  <Input
-                    id="price"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="wholesale_price"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="wholesale_price">Wholesale Price</FieldLabel>
-                  <Input
-                    id="wholesale_price"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="daily_sale_objective"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel className="flex items-center gap-1">
-                    Daily Sale Objective
-                    <Tooltip>
-                      <TooltipTrigger type="button">
-                        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p>
-                          Minimum qty which must be sold in a day. If not, you will be notified on dashboard. But you
-                          have to set up the cron job properly for that. Follow the documentation in that regard.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </FieldLabel>
-                  <Input
-                    id="daily_sale_objective"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    {...field}
-                    value={field.value || ""}
-                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="tax_id"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel htmlFor="tax_id">Product Tax</FieldLabel>
-                  <div className="flex gap-2">
-                    <ProductCombobox
-                      value={field.value}
-                      onChange={field.onChange}
-                      options={[
-                        ...mockTaxes.map((t) => ({ value: t.id, label: t.name })),
-                      ]}
-                      placeholder="Select tax..."
-                    />
-                    <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
-                      <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            <Controller
-              control={form.control}
-              name="tax_method"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error}>
-                  <FieldLabel className="flex items-center gap-1">
-                    Tax Method
-                    <Tooltip>
-                      <TooltipTrigger type="button">
-                        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
-                      </TooltipTrigger>
-                      <TooltipContent className="max-w-xs">
-                        <p className="space-y-1">
-                          <strong>Exclusive:</strong> Product price = Actual product price + Tax.
-                          <br />
-                          <strong>Inclusive:</strong> Actual product price = Product price - Tax.
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </FieldLabel>
-                  <ProductCombobox
-                    value={field.value}
-                    onChange={field.onChange}
-                    options={[
-                      { value: "exclusive", label: "Exclusive" },
-                      { value: "inclusive", label: "Inclusive" },
-                    ]}
-                    placeholder="Select method..."
-                  />
-                  <FieldError>{fieldState.error?.message}</FieldError>
-                </Field>
-              )}
-            />
-
-            {productType !== "service"  && (
-              <Controller
-                control={form.control}
-                name="alert_quantity"
-                render={({ field, fieldState }) => (
-                  <Field data-invalid={!!fieldState.error}>
-                    <FieldLabel htmlFor="alert_quantity">Alert Quantity</FieldLabel>
-                    <Input
-                      id="alert_quantity"
-                      type="number"
-                      step="0.01"
-                      placeholder="0"
-                      {...field}
-                      value={field.value || ""}
-                      onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                    />
-                    <FieldError>{fieldState.error?.message}</FieldError>
-                  </Field>
-                )}
-              />
-            )}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Controller
             control={form.control}
-            name="images"
+            name="price"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor="images">Product Image</FieldLabel>
-                <FileUpload
-                  value={imagesUpload}
-                  onValueChange={(files) => {
-                    setImagesUpload(files)
-                    field.onChange(files.map((f) => f.name))
-                  }}
-                  accept="image/*"
-                  maxFiles={10}
-                  maxSize={5 * 1024 * 1024}
-                  onFileReject={(_, message) => {
-                    form.setError("images", {
-                      message,
-                    })
-                  }}
-                  multiple
-                >
-                  <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
-                    <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
-                    Drag and drop or
-                    <FileUploadTrigger asChild>
-                      <Button variant="link" size="sm" className="p-0">
-                        choose files
-                      </Button>
-                    </FileUploadTrigger>
-                    to upload
-                  </FileUploadDropzone>
-                  <FileUploadList>
-                    {imagesUpload.map((file, index) => (
-                      <FileUploadItem key={index} value={file}>
-                        <FileUploadItemPreview />
-                        <FileUploadItemMetadata />
-                        <FileUploadItemDelete asChild>
-                          <Button variant="ghost" size="icon" className="size-7">
-                            <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </FileUploadItemDelete>
-                      </FileUploadItem>
-                    ))}
-                  </FileUploadList>
-                </FileUpload>
-                {/* Existing Images Display */}
-                {initialData?.images && initialData.images.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-sm font-medium mb-2">Existing Images</p>
-                    <div className="grid grid-cols-4 gap-4">
-                      {initialData.images.map((imageUrl, index) => (
-                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
-                          <ImageZoom
-                            zoomMargin={100}
-                            backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                          >
-                            <Image
-                              src={imageUrl || "/placeholder.svg"}
-                              alt={`Existing image ${index + 1}`}
-                              width={400}
-                              height={400}
-                              className="object-cover"
-                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
-                              unoptimized
-                            />
-                          </ImageZoom>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                <FieldDescription>
-                  Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image
-                  will be base image.
-                </FieldDescription>
+                <FieldLabel htmlFor="price">Product Price *</FieldLabel>
+                <Input
+                  id="price"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  {...field}
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
             )}
@@ -823,17 +583,18 @@ export function ProductForm({
 
           <Controller
             control={form.control}
-            name="product_details"
+            name="wholesale_price"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor="product_details">Product Details</FieldLabel>
-                <Editor
-                  editorSerializedState={productDetailsEditorState || undefined}
-                  onSerializedChange={(value) => {
-                    setProductDetailsEditorState(value)
-                    // Convert editor state to JSON string for form
-                    field.onChange(JSON.stringify(value))
-                  }}
+                <FieldLabel htmlFor="wholesale_price">Wholesale Price</FieldLabel>
+                <Input
+                  id="wholesale_price"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  {...field}
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
                 />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </Field>
@@ -841,6 +602,122 @@ export function ProductForm({
           />
         </div>
 
+        {/* Section 6: Additional Pricing & Tax Information */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Controller
+            control={form.control}
+            name="daily_sale_objective"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel className="flex items-center gap-1">
+                  Daily Sale Objective
+                  <Tooltip>
+                    <TooltipTrigger type="button">
+                      <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>
+                        Minimum qty which must be sold in a day. If not, you will be notified on dashboard. But you have
+                        to set up the cron job properly for that. Follow the documentation in that regard.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FieldLabel>
+                <Input
+                  id="daily_sale_objective"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  {...field}
+                  value={field.value || ""}
+                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                />
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          {productType !== "service" && (
+            <Controller
+              control={form.control}
+              name="alert_quantity"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error}>
+                  <FieldLabel htmlFor="alert_quantity">Alert Quantity</FieldLabel>
+                  <Input
+                    id="alert_quantity"
+                    type="number"
+                    step="0.01"
+                    placeholder="0"
+                    {...field}
+                    value={field.value || ""}
+                    onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+                  />
+                  <FieldError>{fieldState.error?.message}</FieldError>
+                </Field>
+              )}
+            />
+          )}
+
+          <Controller
+            control={form.control}
+            name="tax_id"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel htmlFor="tax_id">Product Tax</FieldLabel>
+                <div className="flex gap-2">
+                  <ProductCombobox
+                    value={field.value}
+                    onChange={field.onChange}
+                    options={[...mockTaxes.map((t) => ({ value: t.id, label: t.name }))]}
+                    placeholder="Select tax..."
+                  />
+                  <Button type="button" variant="secondary" size="icon" onClick={() => setIsTaxDialogOpen(true)}>
+                    <HugeiconsIcon icon={Add01Icon} strokeWidth={2} className="h-4 w-4" />
+                  </Button>
+                </div>
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="tax_method"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={!!fieldState.error}>
+                <FieldLabel className="flex items-center gap-1">
+                  Tax Method
+                  <Tooltip>
+                    <TooltipTrigger type="button">
+                      <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p className="space-y-1">
+                        <strong>Exclusive:</strong> Product price = Actual product price + Tax.
+                        <br />
+                        <strong>Inclusive:</strong> Actual product price = Product price - Tax.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </FieldLabel>
+                <ProductCombobox
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={[
+                    { value: "exclusive", label: "Exclusive" },
+                    { value: "inclusive", label: "Inclusive" },
+                  ]}
+                  placeholder="Select method..."
+                  showClear={false}
+                />
+                <FieldError>{fieldState.error?.message}</FieldError>
+              </Field>
+            )}
+          />
+        </div>
+
+        {/* Section 7: Warranty & Guarantee */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Controller
             control={form.control}
@@ -925,6 +802,7 @@ export function ProductForm({
           />
         </div>
 
+        {/* Section 8: Featured & Embedded Checkboxes */}
         <div className="space-y-4">
           <Controller
             control={form.control}
@@ -953,90 +831,150 @@ export function ProductForm({
               </Field>
             )}
           />
+        </div>
 
-          {!isVariant && !isBatch && !isImei && (
-            <Controller
-              control={form.control}
-              name="is_initial_stock"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error} orientation="horizontal">
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                  <div className="space-y-1 leading-none">
-                    <FieldLabel className="font-normal">Initial Stock</FieldLabel>
-                    <FieldDescription>
-                      This feature will not work for product with variants and batches
-                    </FieldDescription>
-                  </div>
-                </Field>
-              )}
-            />
-          )}
-
-          {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead>Quantity</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {mockWarehouses.map((warehouse) => (
-                  <TableRow key={warehouse.id}>
-                    <TableCell>{warehouse.name}</TableCell>
-                    <TableCell>
-                      <Input type="number" min="0" placeholder="0" className="w-32" />
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-
+        {/* Section 9: Initial Stock (conditional) */}
+        {!isVariant && !isBatch && !isImei && (
           <Controller
             control={form.control}
-            name="is_active"
+            name="is_initial_stock"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error} orientation="horizontal">
                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                <FieldLabel className="font-normal">Product Active</FieldLabel>
+                <div className="space-y-1 leading-none">
+                  <FieldLabel className="font-normal">Initial Stock</FieldLabel>
+                  <FieldDescription>This feature will not work for product with variants and batches</FieldDescription>
+                </div>
               </Field>
             )}
           />
+        )}
 
-          {hasModule("restaurant") && (
-            <Controller
-              control={form.control}
-              name="is_addon"
-              render={({ field, fieldState }) => (
-                <Field data-invalid={!!fieldState.error} orientation="horizontal">
-                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                  <div className="space-y-1">
-                    <FieldLabel className="font-normal">Addon Item</FieldLabel>
-                    <FieldDescription>
-                      Addon Items will be displayed only at the Addon section{" "}
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <span className="inline-flex">
-                            <HugeiconsIcon
-                              icon={InformationCircleIcon}
-                              strokeWidth={2}
-                              className="h-4 w-4 text-muted-foreground"
-                            />
-                          </span>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>Mark this if the product is an add-on item for other products</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </FieldDescription>
+        {isInitialStock && !isVariant && !isBatch && !isImei && mockWarehouses.length > 0 && (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Warehouse</TableHead>
+                <TableHead>Quantity</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mockWarehouses.map((warehouse) => (
+                <TableRow key={warehouse.id}>
+                  <TableCell>{warehouse.name}</TableCell>
+                  <TableCell>
+                    <Input type="number" min="0" placeholder="0" className="w-32" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
+
+        {/* Section 10: Product Images */}
+        <Controller
+          control={form.control}
+          name="images"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel htmlFor="images">Product Image</FieldLabel>
+              <FileUpload
+                value={imagesUpload}
+                onValueChange={(files) => {
+                  setImagesUpload(files)
+                  field.onChange(files.map((f) => f.name))
+                }}
+                accept="image/*"
+                maxFiles={10}
+                maxSize={5 * 1024 * 1024}
+                onFileReject={(_, message) => {
+                  form.setError("images", {
+                    message,
+                  })
+                }}
+                multiple
+              >
+                <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
+                  <HugeiconsIcon icon={Upload01Icon} strokeWidth={2} className="size-4" />
+                  Drag and drop or
+                  <FileUploadTrigger asChild>
+                    <Button variant="link" size="sm" className="p-0">
+                      choose files
+                    </Button>
+                  </FileUploadTrigger>
+                  to upload
+                </FileUploadDropzone>
+                <FileUploadList>
+                  {imagesUpload.map((file, index) => (
+                    <FileUploadItem key={index} value={file}>
+                      <FileUploadItemPreview />
+                      <FileUploadItemMetadata />
+                      <FileUploadItemDelete asChild>
+                        <Button variant="ghost" size="icon" className="size-7">
+                          <HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </FileUploadItemDelete>
+                    </FileUploadItem>
+                  ))}
+                </FileUploadList>
+              </FileUpload>
+              {/* Existing Images Display */}
+              {initialData?.images && initialData.images.length > 0 && (
+                <div className="mt-4">
+                  <p className="text-sm font-medium mb-2">Existing Images</p>
+                  <div className="grid grid-cols-4 gap-4">
+                    {initialData.images.map((imageUrl, index) => (
+                      <div key={index} className="relative aspect-square rounded-lg overflow-hidden border">
+                        <ImageZoom
+                          zoomMargin={100}
+                          backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                        >
+                          <Image
+                            src={imageUrl || "/placeholder.svg"}
+                            alt={`Existing image ${index + 1}`}
+                            width={400}
+                            height={400}
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                            unoptimized
+                          />
+                        </ImageZoom>
+                      </div>
+                    ))}
                   </div>
-                </Field>
+                </div>
               )}
-            />
+              <FieldDescription>
+                Upload up to 10 images up to 5MB each. Only jpeg, jpg, png, gif files can be uploaded. First image will
+                be base image.
+              </FieldDescription>
+              <FieldError>{fieldState.error?.message}</FieldError>
+            </Field>
           )}
-        </div>
+        />
 
+        {/* Section 11: Product Details */}
+        <Controller
+          control={form.control}
+          name="product_details"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel htmlFor="product_details">Product Details</FieldLabel>
+              <Editor
+                editorSerializedState={productDetailsEditorState || undefined}
+                onSerializedChange={(value) => {
+                  setProductDetailsEditorState(value)
+                  // Convert editor state to JSON string for form
+                  field.onChange(JSON.stringify(value))
+                }}
+              />
+              <FieldError>{fieldState.error?.message}</FieldError>
+            </Field>
+          )}
+        />
+
+        {/* Section 12: Variant Section */}
         {!isBatch && productType !== "combo" && (
           <Controller
             control={form.control}
@@ -1150,6 +1088,7 @@ export function ProductForm({
           </>
         )}
 
+        {/* Section 13: Different Price for Warehouse */}
         {mockWarehouses.length > 0 && productType !== "combo" && (
           <Controller
             control={form.control}
@@ -1188,6 +1127,7 @@ export function ProductForm({
           </Table>
         )}
 
+        {/* Section 14: Batch Checkbox */}
         <Controller
           control={form.control}
           name="is_batch"
@@ -1199,6 +1139,7 @@ export function ProductForm({
           )}
         />
 
+        {/* Section 15: IMEI Checkbox */}
         <Controller
           control={form.control}
           name="is_imei"
@@ -1210,6 +1151,7 @@ export function ProductForm({
           )}
         />
 
+        {/* Section 16: Promotion Section */}
         <div className="space-y-4">
           <Controller
             control={form.control}
@@ -1281,6 +1223,7 @@ export function ProductForm({
           )}
         </div>
 
+        {/* Section 17: Woocommerce Sync */}
         {hasModule("woocommerce") && (
           <Controller
             control={form.control}
@@ -1294,32 +1237,82 @@ export function ProductForm({
           />
         )}
 
+        {/* Section 18: Sell Online & In Stock */}
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
+          <>
+            <Controller
+              control={form.control}
+              name="is_online"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <FieldLabel className="font-normal">Sell Online</FieldLabel>
+                </Field>
+              )}
+            />
+
+            {hasModule("ecommerce") && (
+              <Controller
+                control={form.control}
+                name="in_stock"
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                    <FieldLabel className="font-normal">In Stock</FieldLabel>
+                  </Field>
+                )}
+              />
+            )}
+          </>
+        )}
+
+        {/* Section 19: Product Active & Addon */}
+        <div className="space-y-4">
           <Controller
             control={form.control}
-            name="is_online"
+            name="is_active"
             render={({ field, fieldState }) => (
               <Field data-invalid={!!fieldState.error} orientation="horizontal">
                 <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                <FieldLabel className="font-normal">Sell Online</FieldLabel>
+                <FieldLabel className="font-normal">Product Active</FieldLabel>
               </Field>
             )}
           />
-        )}
 
-        {hasModule("ecommerce") && (
-          <Controller
-            control={form.control}
-            name="in_stock"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error} orientation="horizontal">
-                <Checkbox checked={field.value} onCheckedChange={field.onChange} />
-                <FieldLabel className="font-normal">In Stock</FieldLabel>
-              </Field>
-            )}
-          />
-        )}
+          {hasModule("restaurant") && (
+            <Controller
+              control={form.control}
+              name="is_addon"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={!!fieldState.error} orientation="horizontal">
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  <div className="space-y-1">
+                    <FieldLabel className="font-normal">Addon Item</FieldLabel>
+                    <FieldDescription>
+                      Addon Items will be displayed only at the Addon section{" "}
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <span className="inline-flex">
+                            <HugeiconsIcon
+                              icon={InformationCircleIcon}
+                              strokeWidth={2}
+                              className="h-4 w-4 text-muted-foreground"
+                            />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Mark this if the product is an add-on item for other products</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </FieldDescription>
+                  </div>
+                </Field>
+              )}
+            />
+          )}
+        </div>
 
+        {/* Section 20: Product Tags */}
         <Controller
           control={form.control}
           name="product_tags"
@@ -1332,6 +1325,7 @@ export function ProductForm({
           )}
         />
 
+        {/* Section 21: SEO Section */}
         {(hasModule("ecommerce") || hasModule("restaurant")) && (
           <div className="space-y-4">
             <div>
@@ -1365,13 +1359,12 @@ export function ProductForm({
           </div>
         )}
 
-        <div>
-          <RelatedProductsSelector
-            value={relatedProducts}
-            onChange={setRelatedProducts}
-            // Related products selector should stay open during selection
-          />
-        </div>
+        {/* Section 22: Related Products */}
+        {(hasModule("ecommerce") || hasModule("restaurant")) && (
+          <div>
+            <RelatedProductsSelector value={relatedProducts} onChange={setRelatedProducts} />
+          </div>
+        )}
 
         {/* Submit Button */}
         <div className="flex justify-end gap-2">
@@ -1440,6 +1433,6 @@ export function ProductForm({
           </div>
         </DialogContent>
       </Dialog>
-      </>
+    </TooltipProvider>
   )
 }

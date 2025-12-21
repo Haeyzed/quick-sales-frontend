@@ -33,11 +33,11 @@ export function ComboProductTable({ products, onChange }: ComboProductTableProps
   }
 
   if (products.length === 0) {
-    return <div className="border rounded-lg p-8 text-center text-muted-foreground">No combo products added yet</div>
+    return <div className="border rounded-lg p-8 text-center text-muted-foreground mt-2">No combo products added yet</div>
   }
 
   return (
-    <div className="border rounded-lg">
+    <div className="border rounded-lg mt-2">
       <Table>
         <TableHeader>
           <TableRow>
