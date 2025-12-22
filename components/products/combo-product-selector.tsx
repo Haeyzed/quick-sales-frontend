@@ -1,109 +1,112 @@
 "use client"
 
-import { useState } from "react"
+import * as React from "react"
 import Image from "next/image"
-import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { BarCode01Icon } from "@hugeicons/core-free-icons"
+import { BarCode01Icon, Search01Icon } from "@hugeicons/core-free-icons"
+import { 
+  InputGroup, 
+  InputGroupAddon, 
+  InputGroupInput 
+} from "@/components/ui/input-group"
 import { mockProducts } from "@/lib/mock-data/products"
 import type { Product } from "@/lib/types/product"
 
 interface ComboProductSelectorProps {
   onAddProduct: (product: Product) => void
   existingProductIds: string[]
+  placeholder?: string
 }
 
-export function ComboProductSelector({ onAddProduct, existingProductIds }: ComboProductSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [searchResults, setSearchResults] = useState<Product[]>([])
+export function ComboProductSelector({ 
+  onAddProduct, 
+  existingProductIds, 
+  placeholder = "Search by name or code..." 
+}: ComboProductSelectorProps) {
+  const [searchQuery, setSearchQuery] = React.useState("")
+  const [searchResults, setSearchResults] = React.useState<Product[]>([])
+  const [isOpen, setIsOpen] = React.useState(false)
+  const containerRef = React.useRef<HTMLDivElement>(null)
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
     if (query.trim()) {
       const results = mockProducts
-        .filter(
-          (p) =>
+        .filter((p) =>
             p.name.toLowerCase().includes(query.toLowerCase()) ||
-            p.code.toLowerCase().includes(query.toLowerCase()),
-        )
-        .slice(0, 5)
+            p.code.toLowerCase().includes(query.toLowerCase())
+        ).slice(0, 6)
       setSearchResults(results)
+      setIsOpen(true)
     } else {
       setSearchResults([])
+      setIsOpen(false)
     }
   }
 
   const handleSelect = (product: Product) => {
     onAddProduct(product)
-    // setSearchQuery("")
-    // setSearchResults([])
+    setSearchQuery("")
+    setIsOpen(false)
   }
 
   return (
-    <div className="relative mt-2">
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" size="icon">
-          <HugeiconsIcon icon={BarCode01Icon} strokeWidth={2} className="h-4 w-4" />
-        </Button>
-        <div className="relative flex-1">
-          <Input
-            placeholder="Please type product code and select"
-            value={searchQuery}
-            onChange={(e) => handleSearch(e.target.value)}
-            className="flex-1"
-          />
-          {searchResults.length > 0 && (
-            <div className="absolute z-10 mt-1 w-full rounded-md border bg-popover p-2 shadow-md">
-              <div className="space-y-1">
-                {searchResults.map((product) => {
-                  const isDisabled = existingProductIds.includes(product.id)
-                  return (
-                    <Button
-                      key={product.id}
-                      type="button"
-                      variant="ghost"
-                      className={cn(
-                        "w-full justify-start h-auto p-2",
-                        isDisabled && "opacity-50 cursor-not-allowed"
-                      )}
-                      onClick={() => !isDisabled && handleSelect(product)}
-                      disabled={isDisabled}
-                    >
-                      <div className="flex items-center gap-2 w-full">
-                        {product.images?.[0] && (
-                          <ImageZoom
-                            zoomMargin={100}
-                            backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                          >
-                            <Image
-                              src={product.images[0] || "/placeholder.svg"}
-                              alt={product.name}
-                              width={32}
-                              height={32}
-                              className="rounded object-cover"
-                            />
-                          </ImageZoom>
-                        )}
-                        <div className="text-left flex-1">
-                          <div className="font-medium text-sm">{product.name}</div>
-                          <div className="text-xs text-muted-foreground">{product.code}</div>
-                        </div>
-                        {isDisabled && (
-                          <span className="text-xs text-muted-foreground">(Already selected)</span>
-                        )}
-                      </div>
-                    </Button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+    <div className="relative mt-2 w-full" ref={containerRef}>
+      <InputGroup>
+        <InputGroupAddon>
+          <HugeiconsIcon icon={Search01Icon} strokeWidth={2} className="text-muted-foreground size-4" />
+        </InputGroupAddon>
+        <InputGroupInput
+          placeholder={placeholder}
+          value={searchQuery}
+          onChange={(e) => handleSearch(e.target.value)}
+          onFocus={() => searchQuery.trim() && setIsOpen(true)}
+          className="h-11"
+        />
+        <InputGroupAddon align="inline-end">
+          <HugeiconsIcon icon={BarCode01Icon} strokeWidth={2} className="text-muted-foreground size-4" />
+        </InputGroupAddon>
+      </InputGroup>
+
+      {isOpen && searchResults.length > 0 && (
+        <div className="absolute z-50 w-full mt-2 bg-popover border rounded-xl shadow-xl max-h-[300px] overflow-y-auto p-1 animate-in fade-in zoom-in-95">
+          {searchResults.map((product) => {
+            const isAdded = existingProductIds.includes(product.id)
+            return (
+              <button
+                key={product.id}
+                type="button"
+                disabled={isAdded}
+                onClick={() => handleSelect(product)}
+                className={cn(
+                  "flex items-center gap-3 w-full p-2 rounded-lg text-left transition-colors",
+                  isAdded ? "opacity-50 cursor-not-allowed bg-muted/30" : "hover:bg-accent"
+                )}
+              >
+                <div className="size-9 rounded border overflow-hidden relative flex-shrink-0">
+                  <Image src={product.images?.[0] || "/placeholder.svg"} alt="" fill className="object-cover" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{product.name}</div>
+                  <div className="text-xs text-muted-foreground font-mono">{product.code}</div>
+                </div>
+                {isAdded && <span className="text-[10px] bg-secondary px-2 py-0.5 rounded-full">Added</span>}
+              </button>
+            )
+          })}
         </div>
-      </div>
+      )}
     </div>
   )
 }
-

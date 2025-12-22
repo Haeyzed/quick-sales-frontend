@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { ProductCombobox } from "@/components/products/product-combobox"
 import { ComboProductSelector } from "@/components/products/combo-product-selector"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Delete01Icon, PrinterIcon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, PrinterIcon, PackageIcon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { mockProducts } from "@/lib/mock-data/products"
@@ -19,6 +19,7 @@ import type { Brand } from "@/lib/types/brand"
 import Image from "next/image"
 import { ImageZoom } from "@/components/ui/shadcn-io/image-zoom"
 import { cn } from "@/lib/utils"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
 
 interface BarcodeProduct {
   id: string
@@ -106,9 +107,24 @@ export default function PrintBarcodePage() {
             <ComboProductSelector onAddProduct={handleAddProduct} existingProductIds={products.map((p) => p.id)} />
           </div>
 
-          {/* Products Table */}
-          <div>
-            <div className="rounded-md border">
+          {products.length === 0 ? (
+            <Empty className="border rounded-lg py-12 bg-muted/20">
+              <EmptyHeader>
+                <EmptyMedia variant="icon">
+                  <HugeiconsIcon 
+                    icon={PackageIcon} 
+                    strokeWidth={2} 
+                    className="size-8 text-muted-foreground" 
+                  />
+                </EmptyMedia>
+                <EmptyTitle className="text-base">No products selected</EmptyTitle>
+                <EmptyDescription>
+                  Search for products in the input above to add them to your printing list.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <div className="rounded-md border overflow-hidden">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -119,71 +135,60 @@ export default function PrintBarcodePage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {products.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground h-24">
-                        No products added yet
+                  {products.map((product, index) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          {product.images?.[0] && (
+                            <ImageZoom
+                              zoomMargin={100}
+                              backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
+                            >
+                              <Image
+                                src={product.images[0]}
+                                alt={product.name}
+                                width={40}
+                                height={40}
+                                className="rounded object-cover"
+                                unoptimized
+                              />
+                            </ImageZoom>
+                          )}
+                          <div>
+                            <div className="font-medium">{product.name}</div>
+                            <div className="text-xs text-muted-foreground">[{product.code}]</div>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Input
+                          type="number"
+                          value={product.qty}
+                          onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value) || 0)}
+                          className="w-24"
+                          min="1"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <ProductCombobox
+                          value={product.warehouse_id || ""}
+                          onChange={(value: string) => updateWarehouse(index, value)}
+                          options={mockWarehouses.map((w) => ({ value: w.id, label: w.name }))}
+                          placeholder="Choose Warehouse"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Button type="button" variant="destructive" size="icon" onClick={() => removeProduct(index)}>
+                          <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    products.map((product, index) => (
-                      <TableRow key={index}>
-                        
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            {product.images && product.images.length > 0 && (
-                              <ImageZoom
-                                zoomMargin={100}
-                                backdropClassName={cn('[&_[data-rmiz-modal-overlay="visible"]]:bg-black/80')}
-                              >
-                                <Image
-                                  src={product.images[0]}
-                                  alt={product.name}
-                                  width={40}
-                                  height={40}
-                                  className="rounded object-cover"
-                                  sizes="48px"
-                                  unoptimized
-                                />
-                              </ImageZoom>
-                            )}
-                            <div>
-                              <div className="font-medium">{product.name}</div>
-                              <div className="text-sm text-muted-foreground">[{product.code}]</div>
-                            </div>
-                          </div>
-                        </TableCell>
-                        {/* <TableCell>{product.name}</TableCell>
-                        <TableCell className="font-mono text-sm">{product.code}</TableCell> */}
-                        <TableCell>
-                          <Input
-                            type="number"
-                            value={product.qty}
-                            onChange={(e) => updateQuantity(index, Number.parseInt(e.target.value))}
-                            className="w-24"
-                            min="1"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <ProductCombobox
-                            value={product.warehouse_id || ""}
-                            onChange={(value: string) => updateWarehouse(index, value)}
-                            options={mockWarehouses.map((w) => ({ value: w.id, label: w.name }))}
-                            placeholder="Choose Warehouse"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <Button type="button" variant="destructive" size="icon" onClick={() => removeProduct(index)}>
-                            <HugeiconsIcon icon={Delete01Icon} strokeWidth={2} className="h-4 w-4" />
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                  ))}
                 </TableBody>
               </Table>
             </div>
-          </div>
+          )}
+
 
           {/* Print Settings */}
           <div className="space-y-4 border-t pt-6">

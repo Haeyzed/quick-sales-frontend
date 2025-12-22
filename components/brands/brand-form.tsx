@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/file-upload"
 import { brandSchema, type BrandFormValues } from "@/lib/schemas/brand"
 import type { Brand } from "@/lib/types/brand"
+import Image from "next/image"
 
 interface BrandFormProps {
   brand?: Brand
@@ -101,6 +102,7 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
                 </FileUploadTrigger>
                 to upload
               </FileUploadDropzone>
+              
               <FileUploadList>
                 {imageUpload.map((file, index) => (
                   <FileUploadItem key={index} value={file}>
@@ -117,6 +119,30 @@ export function BrandForm({ brand, onSubmit, onCancel, generalSettings = { modul
               </FileUploadList>
             </FileUpload>
             <FieldError>{fieldState.error?.message}</FieldError>
+            {brand?.image && (
+              <div className="mt-2 relative size-32 overflow-hidden rounded-lg border bg-muted">
+                <Image
+                  src={brand.image}
+                  alt={brand.name}
+                  fill
+                  className="object-cover"
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute right-1 top-1 size-6 rounded-full"
+                  onClick={() => {
+                    // This clears the field value so the user can upload a new one
+                    field.onChange("")
+                    // We also need to trigger a re-render by clearing the brand image reference 
+                    // or just letting the FileUpload take over.
+                  }}
+                >
+                  <HugeiconsIcon icon={Cancel01Icon} className="size-3" />
+                </Button>
+              </div>
+            )}
           </Field>
         )}
       />

@@ -6,13 +6,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { HugeiconsIcon } from "@hugeicons/react"
-import { Delete01Icon } from "@hugeicons/core-free-icons"
+import { Delete01Icon, PackageIcon } from "@hugeicons/core-free-icons"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { ComboProduct } from "@/lib/types/product"
 import { mockProducts } from "@/lib/mock-data/products"
 import { mockUnits } from "@/lib/mock-data/units"
 import type { Unit } from "@/lib/types/unit"
 import { ProductCombobox } from "./product-combobox"
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription, EmptyMedia } from "@/components/ui/empty"
 
 interface ComboProductTableProps {
   products: ComboProduct[]
@@ -40,6 +41,22 @@ const handleUpdate = (index: number, field: keyof ComboProduct, value: string | 
   product.subtotal = qty * price * (1 + wastage / 100)
 
   onChange(updated)
+}
+
+if (products.length === 0) {
+  return (
+    <Empty className="border rounded-lg mt-2 py-10 bg-muted/20">
+      <EmptyHeader>
+        <EmptyMedia variant="icon">
+          <HugeiconsIcon icon={PackageIcon} strokeWidth={2} className="size-8 text-muted-foreground" />
+        </EmptyMedia>
+        <EmptyTitle className="text-base">No items in this combo</EmptyTitle>
+        <EmptyDescription>
+          Search for products in the input above to add them to this bundle.
+        </EmptyDescription>
+      </EmptyHeader>
+    </Empty>
+  )
 }
 
   return (

@@ -626,25 +626,31 @@ export function ProductForm({
             )}
           />
 
-          <Controller
-            control={form.control}
-            name="price"
-            render={({ field, fieldState }) => (
-              <Field data-invalid={!!fieldState.error}>
-                <FieldLabel htmlFor="price">Product Price *</FieldLabel>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  {...field}
-                  value={field.value || ""}
-                  onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
-                />
-                <FieldError>{fieldState.error?.message}</FieldError>
-              </Field>
-            )}
-          />
+        <Controller
+          control={form.control}
+          name="price"
+          render={({ field, fieldState }) => (
+            <Field data-invalid={!!fieldState.error}>
+              <FieldLabel htmlFor="price">Product Price *</FieldLabel>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                disabled={productType === "combo"} 
+                {...field}
+                value={field.value || ""}
+                onChange={(e) => field.onChange(e.target.value ? Number.parseFloat(e.target.value) : 0)}
+              />
+              {productType === "combo" && (
+                <FieldDescription>
+                  Price is automatically calculated based on combo items.
+                </FieldDescription>
+              )}
+              <FieldError>{fieldState.error?.message}</FieldError>
+            </Field>
+          )}
+        />
 
           <Controller
             control={form.control}
